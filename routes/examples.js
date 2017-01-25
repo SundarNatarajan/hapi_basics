@@ -1,4 +1,5 @@
 const api = require('../api/examples.js')
+const schemas = require('../schemas/examples')
 
 //module functions
 const {number} = global.config.utilities.Joi
@@ -21,13 +22,7 @@ module.exports = [
             description: 'Get Hello World with the param returned',
             notes: 'return Hello params.arg[1]!',
             tags: ['api'], //INFO tag will be useful for filtering the endpoints -- /documentation?tags=api
-            validate: { //INFO schema validation can be done by using Joi
-                params: {
-                    number: number()
-                        .required()
-                        .description('the number for the todo item'),
-                }
-            }
+            validate: schemas.replyParam //INFO schema validation can be done by using Joi
         }
     }
 ]

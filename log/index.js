@@ -1,4 +1,5 @@
 //TODO clear the existing file and then log, what if file line count goes wrong
+//TODO transport MongoDb, Redis
 const colors = require('colors')
 const fs = require('fs')
 

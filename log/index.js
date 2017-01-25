@@ -1,3 +1,4 @@
+//TODO clear the existing file and then log, what if file line count goes wrong
 const colors = require('colors')
 const fs = require('fs')
 
@@ -5,7 +6,8 @@ const logOptions = {
     level: ['log', 'trace', 'debug', 'info', 'warn', 'error'],
     format: [
         "{{timestamp}} <{{title}}> {{message}} (in {{path}}:{{line}})",
-        { error: "{{timestamp}} <{{title}}> {{message}} (in {{path}:{{line}}) \nCall Stack:\n{{stack}}" }
+        { error: "{{timestamp}} <{{title}}> {{message}} (in {{path}:{{line}}) \nCall Stack:\n{{stack}}" },
+        { info: "{{timestamp}} <{{title}}> {{message}}" }
     ],
     filters: {
         //log : colors.black, 

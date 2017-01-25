@@ -17,6 +17,6 @@ server.start((err) => {
     if (err)
         console.log(err)
     else {
-        trace.warn(`Server running at ${server.info.uri}`)
+        trace.info(`Server running at ${server.info.uri}`)
     }
 })

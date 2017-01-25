@@ -1,39 +1,5 @@
-01:57:09.79 <log> Server running at http://localhost:8080 (in {{path}/index.js:23)
-01:58:37.75 <log> Server running at http://localhost:8080 (in index.js:23)
-01:58:59.51 <log> Server running at http://localhost:8080 (in G:\projects\NodeJs\VS Code\hapi\index.js// index.js:23)
-01:59:15.68 <log> Server running at http://localhost:8080 (in G:\projects\NodeJs\VS Code\hapi\index.jsindex.js:23)
-01:59:31.97 <log> Server running at http://localhost:8080 (in G:\projects\NodeJs\VS Code\hapi\index.js:23)
-[1m[31m02:04:38.88 <error> Server running at http://localhost:8080 (in {{path}/index.js:23) 
-Call Stack:
-    at server.start (G:\projects\NodeJs\VS Code\hapi\index.js:23:15)
-    at _invoke (G:\projects\NodeJs\VS Code\hapi\node_modules\hapi\lib\server.js:305:20)
-    at internals.Server._invoke (G:\projects\NodeJs\VS Code\hapi\node_modules\hapi\lib\server.js:375:16)
-    at Items.serial (G:\projects\NodeJs\VS Code\hapi\node_modules\hapi\lib\server.js:297:14)
-    at done (G:\projects\NodeJs\VS Code\hapi\node_modules\items\lib\index.js:31:25)
-    at Server.finalize (G:\projects\NodeJs\VS Code\hapi\node_modules\hapi\lib\connection.js:171:9)
-    at Server.g (events.js:286:16)
-    at emitNone (events.js:91:20)[39m[22m
-[1m[31m02:05:30.62 <error> Server running at http://localhost:8080 (in {{path}:23) 
-Call Stack:
-    at server.start (G:\projects\NodeJs\VS Code\hapi\index.js:23:15)
-    at _invoke (G:\projects\NodeJs\VS Code\hapi\node_modules\hapi\lib\server.js:305:20)
-    at internals.Server._invoke (G:\projects\NodeJs\VS Code\hapi\node_modules\hapi\lib\server.js:375:16)
-    at Items.serial (G:\projects\NodeJs\VS Code\hapi\node_modules\hapi\lib\server.js:297:14)
-    at done (G:\projects\NodeJs\VS Code\hapi\node_modules\items\lib\index.js:31:25)
-    at Server.finalize (G:\projects\NodeJs\VS Code\hapi\node_modules\hapi\lib\connection.js:171:9)
-    at Server.g (events.js:286:16)
-    at emitNone (events.js:91:20)[39m[22m
-DD:06:YYYY 02:06:20.03 <log> Server running at http://localhost:8080 (in G:\projects\NodeJs\VS Code\hapi\index.js:23)
-26-01-2017 02:07:20.25 <log> Server running at http://localhost:8080 (in G:\projects\NodeJs\VS Code\hapi\index.js:23)
-26-01-2017 02:09:17.72 <log> Server running at http://localhost:8080 (in G:\projects\NodeJs\VS Code\hapi\index.js:23)
-[1m[31m26-01-2017 02:09:34.38 <error> Server running at http://localhost:8080 (in {{path}:23) 
-Call Stack:
-    at server.start (G:\projects\NodeJs\VS Code\hapi\index.js:23:15)
-    at _invoke (G:\projects\NodeJs\VS Code\hapi\node_modules\hapi\lib\server.js:305:20)
-    at internals.Server._invoke (G:\projects\NodeJs\VS Code\hapi\node_modules\hapi\lib\server.js:375:16)
-    at Items.serial (G:\projects\NodeJs\VS Code\hapi\node_modules\hapi\lib\server.js:297:14)
-    at done (G:\projects\NodeJs\VS Code\hapi\node_modules\items\lib\index.js:31:25)
-    at Server.finalize (G:\projects\NodeJs\VS Code\hapi\node_modules\hapi\lib\connection.js:171:9)
-    at Server.g (events.js:286:16)
-    at emitNone (events.js:91:20)[39m[22m
-[33m26-01-2017 02:10:12.07 <warn> Server running at http://localhost:8080 (in G:\projects\NodeJs\VS Code\hapi\index.js:23)[39m
+[32m26-01-2017 03:00:42.41 <info> Server running at http://localhost:8080 (in G:\projects\NodeJs\VS Code\hapi\index.js:20)[39m
+[32m26-01-2017 03:01:51.16 <info> From 127.0.0.1: GET -- http://localhost:8080/4 -- 200 in (37ms) (in G:\projects\NodeJs\VS Code\hapi\plugins\hapi-tracer.js:5)[39m
+[32m26-01-2017 03:03:45.65 <info> Server running at http://localhost:8080 (in G:\projects\NodeJs\VS Code\hapi\index.js:20)[39m
+[32m26-01-2017 03:03:54.37 <info> From 127.0.0.1: GET -- http://localhost:8080/swaggerui/images/favicon-16x16.png -- 304 in (73ms) (in G:\projects\NodeJs\VS Code\hapi\plugins\hapi-tracer.js:5)[39m
+[32m26-01-2017 03:03:56.43 <info> From 127.0.0.1: GET -- http://localhost:8080/ -- 200 in (12ms) (in G:\projects\NodeJs\VS Code\hapi\plugins\hapi-tracer.js:5)[39m

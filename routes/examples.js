@@ -11,14 +11,7 @@ module.exports = [
             handler: api.helloWorld,
             description: 'Get Hello World',
             notes: 'returns Hello world!',
-            tags: ['api'], //INFO tag will be useful for filtering the endpoints -- /documentation?tags=api
-            validate: { //INFO schema validation can be done by using Joi
-                params: {
-                    id: number()
-                        .required()
-                        .description('the id for the todo item'),
-                }
-            }
+            tags: ['api'] //INFO tag will be useful for filtering the endpoints -- /documentation?tags=api
         },
     }, {
         method: 'GET',

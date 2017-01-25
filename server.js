@@ -8,11 +8,11 @@ const server = new Hapi.Server()
 server.connection({ host: 'localhost', port: '8080' })
 
 //hapi registers plugins
-const serverRegisters = require('./register')
+const plugins = require('./plugins')
 const routes = require('./routes')
 
 //server routes
-server.register(serverRegisters, (err) => {
+server.register(plugins, (err) => {
     if (err) {
         console.log(`Error on registering Good plugin ${err.stack || err}`)
     }

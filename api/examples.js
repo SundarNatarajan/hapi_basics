@@ -5,7 +5,7 @@ class Examples {
     }
 
     static replyParam(request, reply){
-        reply(`Hello ${encodeURIComponent(request.params.name)}!`)//INFO use encodeURIComponent for request params
+        reply(`Hello ${encodeURIComponent(request.params.number)}!`)//INFO use encodeURIComponent for request params
     }
 }
 

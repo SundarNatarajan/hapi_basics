@@ -1,6 +1,6 @@
 const _ = require('lodash')
 
-const {merge, concat} = _
+const {merge, concat} = global.config.utilities._
 
 const publicPages = require('./publicPages')
 const examples = require('./examples')

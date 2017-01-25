@@ -2,8 +2,13 @@ module.exports = [
     {
         method: 'GET',
         path: '/hello',
-        handler: function (request, reply) {
-            reply.file('./public/hello.md');
+        config: {
+            handler: function (request, reply) {
+                reply.file('./public/hello.md');
+            },
+            description: 'Return the hello.md',
+            notes: 'Return hello.md',
+            tags: ['publicpages']
         }
     }
 ]

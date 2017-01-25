@@ -1,4 +1,5 @@
-const Good = require('good')
+//TODO authentication plugin
+
 const Inert = require('inert') //INFO for static page serving
 const Vision = require('vision') //Template for hapi-swagger
 const HapiSwagger = require('hapi-swagger')

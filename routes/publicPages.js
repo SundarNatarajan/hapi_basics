@@ -5,10 +5,11 @@ module.exports = [
         config: {
             handler: function (request, reply) {
                 reply.file('./public/hello.md');
+                // reply.send({name: 'Sundar'})
             },
             description: 'Return the hello.md',
             notes: 'Return hello.md',
-            tags: ['publicpages']
+            tags: ['api','publicpages']
         }
     }
 ]

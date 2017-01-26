@@ -1,3 +1,4 @@
+//TODO configure the eslint first
 const utilities = {
     Joi: require('joi'),
     _: require('lodash'),
@@ -11,6 +12,8 @@ global.config = {
 trace = require('./log')
 
 const server = require('./server')
+
+const mongodb = require('./mongodb')
 
 
 server.start((err) => {

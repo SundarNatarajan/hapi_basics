@@ -1,16 +1,18 @@
-const MongoClient = require('mongodb').MongoClient
-  , assert = require('assert');
- 
-// Connection URL 
-//TODO get the connection from config files
-const url = 'mongodb://localhost:27017/myproject';
-// Use connect method to connect to the Server 
-MongoClient.connect(url, function(err, db) {
-  assert.equal(null, err);
-  console.log("Connected correctly to server");
- 
-  db.close();
-  
-});
+const mongoose = require('mongoose')
+mongoose.connect(`mongodb://localhost:27017`)
+
+//load the schemas
+const Person = require('./schemas/person')
+const Author = require('./schemas/author')
+Person.find().exec((err, docs) => {
+    if (err)
+        trace.error(err)
+    trace.log(JSON.stringify(docs))
+})
 
 
+Author.find().exec((err, docs) => {
+    if (err)
+        trace.error(err)
+    trace.log(JSON.stringify(docs))
+})

@@ -7,8 +7,8 @@ const logOptions = {
     level: ['log', 'trace', 'debug', 'info', 'warn', 'error'],
     format: [
         "{{timestamp}} <{{title}}> {{message}} (in {{path}}:{{line}})",
-        { error: "{{timestamp}} <{{title}}> {{message}} (in {{path}:{{line}}) \nCall Stack:\n{{stack}}" },
-        { info: "{{timestamp}} <{{title}}> {{message}}" }
+        { info: "{{timestamp}} <{{title}}> {{message}}" },
+        { error: "{{timestamp}} <{{title}}> {{message}} (in {{path}:{{line}}) \nCall Stack:\n{{stack}}" }        
     ],
     filters: {
         //log : colors.black, 

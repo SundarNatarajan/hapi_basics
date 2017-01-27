@@ -8,7 +8,7 @@ const logOptions = {
     format: [
         "{{timestamp}} <{{title}}> {{message}} (in {{path}}:{{line}})",
         { info: "{{timestamp}} <{{title}}> {{message}}" },
-        { error: "{{timestamp}} <{{title}}> {{message}} (in {{path}:{{line}}) \nCall Stack:\n{{stack}}" }        
+        { error: "{{timestamp}} <{{title}}> {{message}} (in {{path}:{{line}}) \nCall Stack:\n{{stack}}" }
     ],
     filters: {
         //log : colors.black, 
@@ -25,9 +25,9 @@ const logOptions = {
                 flags: "a",
                 encoding: "utf8",
                 mode: 0666
-            }).write(data.output+"\n");
+            }).write(data.output + "\n");
         },
-        function(data) {
+        function (data) {
             console.log(data.output);
         }
     ]

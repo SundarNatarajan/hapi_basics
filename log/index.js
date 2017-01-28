@@ -6,6 +6,15 @@ const fs = require('fs')
 
 const db = mongo.db('mongodb://localhost:27017/log'); //TODO MongoDB Connections
 
+const logCollections = { //TODO from config
+    log: "loginfo",
+    trace: "logtrace",
+    debug: "logdebug",
+    info: "loginfo",
+    warn: "logwarn",
+    error: "logerror"
+}
+
 const logOptions = {
     level: ['log', 'trace', 'debug', 'info', 'warn', 'error'],
     format: [
@@ -24,24 +33,21 @@ const logOptions = {
     dateformat: "dd-mm-yyyy HH:MM:ss.L",
     transport: [
         function (data) {
-            var stream = fs.createWriteStream("./log-output/stream.log", {
+            const stream = fs.createWriteStream(`./log-output/${logCollections[data.title] || 'logcollections'}.log`, {
                 flags: "a",
                 encoding: "utf8",
                 mode: 0666
             }).write(data.output + "\n");
         },
         function (data) {
-            console.log(data.output);
+            console.log(data.output)
         },
         function (data) {
-            if (data.title == 'info') {
-                const loginfo = db.collection("loginfo");
-                loginfo.insert(data, function (err, log) {
-                    if (err) {
-                        console.error(err);
-                    }
-                })
-            }
+            db.collection(logCollections[data.title] || 'logcollections').insert(data, function (err, log) {
+                if (err) {
+                    console.error(err);
+                }
+            })
         }
     ]
 }

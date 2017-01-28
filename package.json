@@ -24,6 +24,7 @@
     "mongodb": "^2.2.22",
     "mongoose": "^4.7.8",
     "mongoskin": "^2.1.0",
+    "showdown": "^1.6.1",
     "tracer": "^0.8.7",
     "vision": "^4.1.1",
     "winston": "^2.3.1"

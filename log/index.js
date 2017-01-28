@@ -1,7 +1,10 @@
 //TODO clear the existing file and then log, what if file line count goes wrong
 //TODO transport MongoDb, Redis
+const mongo = require('mongoskin');
 const colors = require('colors')
 const fs = require('fs')
+
+const db = mongo.db('mongodb://localhost:27017/log'); //TODO MongoDB Connections
 
 const logOptions = {
     level: ['log', 'trace', 'debug', 'info', 'warn', 'error'],
@@ -29,6 +32,16 @@ const logOptions = {
         },
         function (data) {
             console.log(data.output);
+        },
+        function (data) {
+            if (data.title == 'info') {
+                const loginfo = db.collection("loginfo");
+                loginfo.insert(data, function (err, log) {
+                    if (err) {
+                        console.error(err);
+                    }
+                })
+            }
         }
     ]
 }

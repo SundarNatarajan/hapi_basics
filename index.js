@@ -13,12 +13,10 @@ trace = require('./log')
 
 const server = require('./server')
 
-const mongodb = require('./mongodb')
-
 
 server.start((err) => {
     if (err)
-        console.log(err)
+        trace.error(err)
     else {
         trace.info(`Server running at ${server.info.uri}`)
     }

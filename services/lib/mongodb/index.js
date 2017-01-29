@@ -2,7 +2,11 @@ const mongoose = require('mongoose')
 
 class MongoDb{
     constructor(conn){
-        mongoose.connect(conn) //'mongodb://localhost:27017'
+        this.mongoose.connect(conn) //'mongodb://localhost:27017'
+    }
+
+    static connectedMongoose(){
+        return this.mongoose
     }
 }
 

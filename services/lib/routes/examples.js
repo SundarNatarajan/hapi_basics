@@ -9,7 +9,7 @@ module.exports = [
             handler: api.helloWorld,
             description: 'Get Hello World',
             notes: 'returns Hello world!',
-            tags: ['api'] //INFO tag will be useful for filtering the endpoints -- /documentation?tags=api
+            tags: ['examples'] //INFO tag will be useful for filtering the endpoints -- /documentation?tags=api
         },
     }, {
         method: 'GET',
@@ -18,7 +18,7 @@ module.exports = [
             handler: api.replyParam,
             description: 'Get Hello World with the param returned',
             notes: 'return Hello params.arg[1]!',
-            tags: ['api'], //INFO tag will be useful for filtering the endpoints -- /documentation?tags=api
+            tags: ['examples'], //INFO tag will be useful for filtering the endpoints -- /documentation?tags=api
             validate: schemas.replyParam //INFO schema validation can be done by using Joi
         }
     }

@@ -19,14 +19,14 @@ hapiTracer.register.attributes = {
 }
 
 
-//404 error handling
+//error handling for failed requests
 const fileNotFound = {
   register: function (server, options, next) {
     server.ext('onPostHandler', function (request, reply) {
 
       const response = request.response;
-      console.log(`isBoom: ${response.isBoom}, statusCode :${response.output.statusCode}`)
-      if (response.isBoom &&
+      //console.log(`isBoom: ${response.isBoom}, statusCode :${response.output.statusCode}`)
+      if (response.isBoom && response.output &&
         response.output.statusCode === 404) {
           console.log(`fadgfasghdfah`)
         return reply.file('404.html').code(404);

@@ -19,13 +19,13 @@ module.exports = MongoDb
 const Author = require('./schemas/author')
 Person.find().exec((err, docs) => {
     if (err)
-        trace.error(err)
-    trace.log(JSON.stringify(docs))
+        logger.error(err)
+    logger.log(JSON.stringify(docs))
 })
 
 Author.find().exec((err, docs) => {
     if (err)
-        trace.error(err)
-    trace.log(JSON.stringify(docs))
+        logger.error(err)
+    logger.log(JSON.stringify(docs))
 })*/
 

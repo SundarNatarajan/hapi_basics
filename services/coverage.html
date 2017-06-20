@@ -1,0 +1,3346 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Tests &amp; Coverage</title>
+    <script>
+      headings = [];
+    
+      onload = function () {
+          headings = document.querySelectorAll('h2');
+          reset();
+      };
+    
+      onscroll = function (e) {
+          var heading = find(window.scrollY);
+          if (!heading) {
+            var current = document.querySelector('#menu a.active');
+            if (current) {
+              current.className = '';
+            }
+            return;
+          }
+          var links = document.querySelectorAll('#menu a')
+                  , link;
+    
+          for (var i = 0, len = links.length; i < len; ++i) {
+              link = links[i];
+              link.className = link.getAttribute('href') == '#' + heading.id ? 'active' : '';
+          }
+      };
+    
+      function find (y) {
+          var i = headings.length
+                  , heading;
+    
+          while (i--) {
+              heading = headings[i];
+              if (y >= heading.offsetTop) {
+                  return heading;
+              }
+          }
+      }
+    
+      function toggle (className) {
+    
+          var elements = document.getElementsByClassName(className);
+    
+          for (var i = 0, il = elements.length; i < il; ++i) {
+              var element = elements[i];
+    
+              if (element.classList.contains('hide')) {
+                  element.classList.remove('hide');
+                  element.classList.add('show');
+              }
+              else {
+                  element.classList.remove('show');
+                  element.classList.add('hide');
+              }
+          };
+      }
+    
+      function reset () {
+    
+          var shownElements = document.getElementsByClassName('show');
+          var filterElements = document.querySelectorAll('input[type=checkbox]');
+    
+          for (var i = 0, il = filterElements.length; i < il; ++i) {
+              filterElements[i].checked = false;
+          }
+    
+          // Check any filters with visible elements
+          for (i = 0, il = shownElements.length; i < il; ++i) {
+              var shownElement = shownElements[i];
+              var classNames = shownElement.className.split(' ');
+              for (var ci = 0, cl = classNames.length; ci < cl; ++ci){
+                  var element = document.getElementById('show-' + classNames[ci]);
+                  if (element) {
+                      element.checked = true;
+                  }
+              }
+          }
+      };
+    
+      function filter (element) {
+    
+          toggle(element.value);
+          reset();
+      }
+    </script>
+    <style>
+        body {
+            font: 14px/1.6 Helvetica, Arial, sans-serif;
+            margin: 0;
+            color: #2c2c2c;
+        }
+    
+        #tests, #coverage, #linting {
+            padding: 60px;
+        }
+    
+        h1 a:hover {
+            text-decoration: none;
+        }
+    
+        a[href^="#"],
+        a[href^="#"]:visited {
+            color: inherit;
+            text-decoration: none;
+        }
+    
+        h2 {
+            width: 80%;
+            margin-top: 80px;
+            margin-bottom: 0;
+            font-weight: 100;
+            letter-spacing: 1px;
+        }
+    
+        ul {
+            margin-top: 20px;
+            padding: 0 15px;
+            width: 100%;
+        }
+    
+        ul li {
+            float: left;
+            width: 40%;
+            margin-top: 5px;
+            margin-right: 60px;
+            list-style: none;
+            padding: 5px 0;
+            font-size: 12px;
+        }
+    
+        #menu {
+            position: fixed;
+            font-size: 12px;
+            overflow-y: auto;
+            top: 0;
+            right: 0;
+            margin: 0;
+            height: 100%;
+            padding: 15px 15px;
+            border-left: 1px solid #eee;
+            background-color: #666;
+            z-index: 1;
+        }
+    
+        #menu::after {
+            display: block;
+            content: '';
+            padding-top: 80px;
+        }
+    
+        #menu li a {
+            display: block;
+            color: white;
+            padding: 0 5px 0 35px;
+            transition: background 300ms;
+            text-decoration: none;
+        }
+    
+        #menu li {
+            position: relative;
+            list-style: none;
+        }
+    
+        #menu a:hover,
+        #menu a.active {
+            text-decoration: none;
+            background: rgba(255, 255, 255, .4);
+        }
+    
+        #menu li:hover .cov {
+            opacity: 1;
+        }
+    
+        #menu li .dirname {
+            opacity: .60;
+            padding-right: 2px;
+        }
+    
+        #menu li .basename {
+            opacity: 1;
+        }
+    
+        #menu .cov, #menu .lint {
+            background: rgba(0, 0, 0, .3);
+            position: absolute;
+            top: 0;
+            font-size: 9px;
+            text-align: center;
+            opacity: .8;
+            width: 22px;
+            border-radius: 10px;
+            padding: 2px 3px;
+        }
+    
+        #files .stats:nth-child(2n):not(.hide) {
+            display: inline-block;
+            margin-top: 15px;
+            border: 1px solid #eee;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    
+        .stats div {
+            float: left;
+            padding: 0 5px;
+        }
+    
+        .stats::after {
+            display: block;
+            content: '';
+            clear: both;
+        }
+    
+        .stats .sloc::after {
+            content: ' SLOC';
+            color: #b6b6b6;
+        }
+    
+        .stats .percentage::after {
+            content: ' coverage';
+            color: #b6b6b6;
+        }
+    
+        .stats .hits::before {
+            content: '(';
+            color: #b6b6b6;
+        }
+    
+        .stats .hits::after {
+            content: ' Covered';
+            color: #b6b6b6;
+        }
+    
+        .stats .misses::after {
+            content: ' Not Covered)';
+            color: #b6b6b6;
+        }
+    
+        .stats .failures::after {
+            content: ' Failures';
+            color: #b6b6b6;
+        }
+    
+        .stats .skipped::after {
+            content: ' Skipped';
+            color: #b6b6b6;
+        }
+    
+        .stats .test-count::after {
+            content: ' Tests';
+            color: #b6b6b6;
+        }
+    
+        .stats .duration::before {
+            content: '(';
+            color: #b6b6b6;
+        }
+    
+        .stats .duration::after {
+            content: ' ms)';
+            color: #b6b6b6;
+        }
+    
+        .high {
+            color: #00d4b4;
+        }
+    
+        .medium {
+            color: #e87d0d;
+        }
+    
+        .low {
+            color: #d4081a;
+        }
+    
+        .terrible {
+            color: #d4081a;
+            font-weight: bold;
+        }
+    
+        #files table {
+            width: 80%;
+            margin-top: 10px;
+            border-collapse: collapse;
+            border: 1px solid #cbcbcb;
+            color: #363636;
+            border-radius: 3px;
+        }
+    
+        #files thead {
+            display: none;
+        }
+    
+        table td.line,
+        table td.lint,
+        table td.hits,
+        table td.original-line {
+            width: 20px;
+            background: #eaeaea;
+            text-align: right;
+            font-size: 11px;
+            padding: 0 10px;
+            color: #949494;
+            white-space: nowrap;
+        }
+    
+        table td.hits {
+            width: 10px;
+            padding: 2px 5px;
+            color: rgba(0, 0, 0, .2);
+            background: #f0f0f0;
+        }
+    
+        table td.lint.empty {
+            width: 0;
+            padding: 0;
+        }
+    
+        table td.lint > span {
+            border-radius: 50%;
+            width: 8px;
+            height: 8px;
+            display: inline-block;
+            vertical-align: baseline;
+        }
+    
+        table td.lint .errors {
+            background-color: red;
+        }
+    
+        table td.lint .warnings {
+            background-color: orange;
+        }
+    
+        tr.miss td.line,
+        tr.miss td.hits {
+            background: #e6c3c7;
+        }
+    
+        tr.miss td {
+            background: #f8d5d8;
+        }
+    
+        td.source {
+            padding-left: 15px;
+            line-height: 15px;
+            white-space: pre;
+            font: 12px monaco, monospace;
+        }
+    
+        td.source div {
+            display: inline-block;
+        }
+    
+        td.source div.true {
+            background: #bae8bf;
+        }
+    
+        td.source div.false {
+            background: #e8e5ba;
+        }
+    
+        td.source div.never {
+            background: #f8d5d8;
+        }
+    
+        #tests table {
+            width: 80%;
+            margin-top: 10px;
+            border-collapse: collapse;
+            border: 1px solid #cbcbcb;
+            color: #363636;
+            border-radius: 3px;
+        }
+    
+        #tests thead {
+            background: #F5F5F5;
+        }
+    
+        #tests tr {
+            border: 1px solid #ccc;
+        }
+    
+        #tests td {
+            padding-left: 8px;
+            vertical-align: top;
+        }
+    
+        #tests .success:nth-child(2n) {
+            background: #F5F5F5;
+        }
+    
+        #tests .failure {
+            background: #FF9E9E;
+        }
+    
+        #tests table .skipped {
+            background: #AA82FF;
+        }
+    
+        #tests .success {
+            color: #949494;
+        }
+    
+        #tests .failure .test-title {
+            font-weight: bold;
+            margin-top: 5px;
+        }
+    
+        #tests .stack {
+            margin-top: 4px;
+            padding-left: 15px;
+            margin-bottom: 12px;
+            font: 12px monaco, monospace;
+            white-space: pre;
+            line-height: 15px;
+        }
+    
+        .hide {
+            display: none;
+        }
+    
+        .show {
+            display: inherit;
+        }
+    
+        #tests table .show {
+            display: table-row;
+        }
+    
+        [data-tooltip] {
+            position: relative;
+        }
+    
+        [data-tooltip]:hover:before {
+            border: solid;
+            border-color: #333 transparent;
+            border-width: 6px 6px 0 6px;
+            bottom: 20px;
+            content: "";
+            left: 0;
+            position: absolute;
+            z-index: 99;
+        }
+    
+        [data-tooltip]:hover:after {
+            background: #333;
+            background: rgba(0, 0, 0, .8);
+            border-radius: 5px;
+            bottom: 26px;
+            color: #fff;
+            left: -10px;
+            padding: 5px 15px;
+            position: absolute;
+            z-index: 98;
+            content: attr(data-tooltip);
+            white-space: pre;
+            text-align: left;
+        }
+    
+        .line[data-tooltip]:hover:after {
+            content: "Line number";
+        }
+    
+        .hits[data-tooltip]:hover:after {
+            content: "Number of hits";
+        }
+    
+        .miss .source[data-tooltip]:hover:after {
+            content: "Missed line";
+        }
+    
+        .miss.true[data-tooltip]:hover:after {
+            content: "Condition always true";
+        }
+    
+        .miss.false[data-tooltip]:hover:after {
+            content: "Condition always false";
+        }
+    
+        .miss.never[data-tooltip]:hover:after {
+            content: "Statement never reached";
+        }
+    
+        .lint .errors[data-tooltip]:hover:after {
+            content: "Linting errors:\A" attr(data-tooltip);
+        }
+    
+        .lint .warnings[data-tooltip]:hover:after {
+            content: "Linting warnings:\A" attr(data-tooltip);
+        }
+    
+        .original-line[data-tooltip]:hover:after {
+            content: "Original line in file " attr(data-tooltip);
+        }
+    
+        #filters {
+            width: 75%;
+            margin-top: 25px;
+        }
+    
+        #filters label {
+            margin-right: 10px;
+        }
+    
+        .lint-stats .lint-errors::after {
+            content: ' linting errors';
+            color: #b6b6b6;
+        }
+    
+        .lint-stats .lint-warnings::after {
+            content: ' linting warnings';
+            color: #b6b6b6;
+        }
+    
+        .lint-entry {
+            color: #b6b6b6;
+            float: none;
+            padding: 0;
+        }
+    
+        .lint-entry .level-ERROR {
+            color: #d4081a;
+        }
+    
+        .lint-entry .level-WARNING {
+            color: #e87d0d;
+        }
+    </style>
+  </head>
+  <body>
+    <div id="menu">
+        <li><a href="#tests">Test Report</a></li>
+        <li><a href="#coverage">Coverage Report</a></li>
+        <li class="">
+            <span class="cov high">88.89</span>
+            <a href="#server.js"><span class="basename">server.js</span></a>
+        </li>
+        <li class="">
+            <span class="cov high">86.96</span>
+            <a href="#lib/index.js"><span class="dirname">lib/</span><span class="basename">index.js</span></a>
+        </li>
+        <li class="">
+            <span class="cov high">100</span>
+            <a href="#lib/api/examples.js"><span class="dirname">lib/api/</span><span class="basename">examples.js</span></a>
+        </li>
+        <li class="">
+            <span class="cov high">87.50</span>
+            <a href="#lib/plugins/hapi-tracer.js"><span class="dirname">lib/plugins/</span><span class="basename">hapi-tracer.js</span></a>
+        </li>
+        <li class="">
+            <span class="cov high">100</span>
+            <a href="#lib/plugins/index.js"><span class="dirname">lib/plugins/</span><span class="basename">index.js</span></a>
+        </li>
+        <li class="">
+            <span class="cov high">84.21</span>
+            <a href="#lib/plugins/onRequest.js"><span class="dirname">lib/plugins/</span><span class="basename">onRequest.js</span></a>
+        </li>
+        <li class="">
+            <span class="cov high">100</span>
+            <a href="#lib/routes/examples.js"><span class="dirname">lib/routes/</span><span class="basename">examples.js</span></a>
+        </li>
+        <li class="">
+            <span class="cov high">100</span>
+            <a href="#lib/routes/index.js"><span class="dirname">lib/routes/</span><span class="basename">index.js</span></a>
+        </li>
+        <li class="">
+            <span class="cov high">76.92</span>
+            <a href="#lib/routes/publicPages.js"><span class="dirname">lib/routes/</span><span class="basename">publicPages.js</span></a>
+        </li>
+        <li class="">
+            <span class="cov high">100</span>
+            <a href="#lib/schemas/examples.js"><span class="dirname">lib/schemas/</span><span class="basename">examples.js</span></a>
+        </li>
+        <li class="">
+            <span class="cov high">91.67</span>
+            <a href="#log/index.js"><span class="dirname">log/</span><span class="basename">index.js</span></a>
+        </li>
+        <li><a href="#linting">Linting Report</a></li>
+    </div>
+    <div id="tests">
+      <h1>Test Report</h1>
+      <div class="stats terrible">
+          <div class="failures">2</div>
+          <div class="skipped">0</div>
+          <div class="test-count">3</div>
+          <div class="duration">479</div>
+      </div>
+      <div id="filters">
+          <input type="checkbox" checked="" onchange="filter(this)" value="success" id="show-success">
+          <label for="show-success">Show Success</label>
+          <input type="checkbox" checked="" onchange="filter(this)" value="failure" id="show-failure">
+          <label for="show-failure">Show Failure</label>
+          <br>
+          <input type="checkbox" checked="" onchange="filter(this)" value="functional_tests_-_products" id="show-functional_tests_-_products">
+          <label for="show-functional_tests_-_products">functional tests - products</label>
+          <input type="checkbox" checked="" onchange="filter(this)" value="functional_tests_-_get_documentation" id="show-functional_tests_-_get_documentation">
+          <label for="show-functional_tests_-_get_documentation">functional tests - get documentation</label>
+      </div>
+      <table>
+          <thead>
+          <tr>
+              <th>ID</th>
+              <th>Title</th>
+              <th>Duration (ms)</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr class="show functional_tests_-_products failure">
+              <td class="test-id">1</td>
+              <td class="test-title">functional tests - products should get products
+                  <div class="stack">Error: Expected { raw: 
+       { res: 
+          Response {
+            domain: [Object],
+            _events: {},
+            _eventsCount: 0,
+            _maxListeners: undefined,
+            output: [],
+            outputEncodings: [],
+            outputCallbacks: [],
+            outputSize: 0,
+            writable: true,
+            _last: false,
+            chunkedEncoding: false,
+            shouldKeepAlive: true,
+            useChunkedEncodingByDefault: true,
+            sendDate: true,
+            _removedHeader: [Object],
+            _contentLength: null,
+            _hasBody: true,
+            _trailer: &#x27;&#x27;,
+            finished: true,
+            _headerSent: true,
+            socket: [Object],
+            connection: [Object],
+            _header: &#x27;HTTP/1.1 200 OK\r\ncontent-type: text/html; charset&#x3D;utf-8\r\ncache-control: no-cache\r\ncontent-length: 8\r\naccept-ranges: bytes\r\nDate: Tue, 20 Jun 2017 18:42:05 GMT\r\nConnection: keep-alive\r\n\r\n&#x27;,
+            _headers: [Object],
+            _headerNames: [Object],
+            _onPendingData: null,
+            _shot: [Object],
+            statusMessage: &#x27;OK&#x27;,
+            statusCode: 200 },
+         req: 
+          Readable {
+            _readableState: [Object],
+            readable: true,
+            domain: [Object],
+            _events: {},
+            _eventsCount: 0,
+            _maxListeners: undefined,
+            url: &#x27;/2&#x27;,
+            httpVersion: &#x27;1.1&#x27;,
+            method: &#x27;GET&#x27;,
+            headers: [Object],
+            connection: [Object],
+            _shot: [Object] } },
+      headers: 
+       { &#x27;content-type&#x27;: &#x27;text/html; charset&#x3D;utf-8&#x27;,
+         &#x27;cache-control&#x27;: &#x27;no-cache&#x27;,
+         &#x27;content-length&#x27;: 8,
+         &#x27;accept-ranges&#x27;: &#x27;bytes&#x27;,
+         date: &#x27;Tue, 20 Jun 2017 18:42:05 GMT&#x27;,
+         connection: &#x27;keep-alive&#x27; },
+      statusCode: 200,
+      statusMessage: &#x27;OK&#x27;,
+      trailers: {},
+      rawPayload: &lt;Buffer 48 65 6c 6c 6f 20 32 21&gt;,
+      payload: &#x27;Hello 2!&#x27;,
+      result: &#x27;Hello 2!&#x27;,
+      request: 
+       EventEmitter {
+         domain: 
+          Domain {
+            domain: null,
+            _events: [Object],
+            _eventsCount: 1,
+            _maxListeners: undefined,
+            members: [] },
+         _events: {},
+         _eventsCount: 0,
+         _maxListeners: undefined,
+         _bench: { ts: 8087716.426916 },
+         connection: 
+          EventEmitter {
+            domain: null,
+            _events: [Object],
+            _eventsCount: 6,
+            _maxListeners: undefined,
+            settings: [Object],
+            server: [Object],
+            type: &#x27;tcp&#x27;,
+            _started: true,
+            _connections: {},
+            _onConnection: null,
+            registrations: [Object],
+            _extensions: [Object],
+            _requestCounter: [Object],
+            _load: [Object],
+            states: [Object],
+            auth: [Object],
+            _router: [Object],
+            plugins: {},
+            app: {},
+            listener: [Object],
+            info: [Object] },
+         server: 
+          EventEmitter {
+            _settings: [Object],
+            _caches: [Object],
+            _handlers: [Object],
+            _methods: [Object],
+            _events: [Object],
+            _dependencies: [Object],
+            _registrations: [Object],
+            _heavy: [Object],
+            _mime: [Object],
+            _replier: [Object],
+            _requestor: [Object],
+            _decorations: [Object],
+            _plugins: [Object],
+            _app: {},
+            _registring: false,
+            _state: &#x27;starting&#x27;,
+            _extensionsSeq: 12,
+            _extensions: [Object],
+            domain: null,
+            _maxListeners: undefined,
+            _sources: [Object],
+            _parent: null,
+            root: [Circular],
+            app: {},
+            connections: [Object],
+            load: [Object],
+            methods: {},
+            mime: [Object],
+            plugins: [Object],
+            settings: [Object],
+            version: &#x27;14.2.0&#x27;,
+            realm: [Object],
+            auth: [Object],
+            info: [Object],
+            listener: [Object],
+            registrations: [Object],
+            views: [Function],
+            render: [Function] },
+         url: 
+          Url {
+            protocol: null,
+            slashes: null,
+            auth: null,
+            host: null,
+            port: null,
+            hostname: null,
+            hash: null,
+            search: &#x27;&#x27;,
+            query: {},
+            pathname: &#x27;/2&#x27;,
+            path: &#x27;/2&#x27;,
+            href: &#x27;/2&#x27; },
+         query: {},
+         path: &#x27;/2&#x27;,
+         method: &#x27;get&#x27;,
+         mime: null,
+         setUrl: undefined,
+         setMethod: undefined,
+         headers: { &#x27;user-agent&#x27;: &#x27;shot&#x27;, host: &#x27;localhost:8080&#x27; },
+         id: &#x27;1497984125639:Sundar-PC:928:j45x2kc9:10000&#x27;,
+         app: {},
+         plugins: {},
+         _route: 
+          { settings: [Object],
+            connection: [Object],
+            server: [Object],
+            path: &#x27;/{number}&#x27;,
+            method: &#x27;get&#x27;,
+            plugin: [Object],
+            _special: false,
+            _analysis: [Object],
+            params: [Object],
+            fingerprint: &#x27;/?&#x27;,
+            public: [Object],
+            _prerequisites: null,
+            _extensions: [Object],
+            _cycle: [Object] },
+         route: 
+          { method: &#x27;get&#x27;,
+            path: &#x27;/{number}&#x27;,
+            vhost: undefined,
+            realm: [Object],
+            settings: [Object],
+            fingerprint: &#x27;/?&#x27; },
+         auth: 
+          { isAuthenticated: false,
+            credentials: null,
+            artifacts: null,
+            strategy: null,
+            mode: null,
+            error: null },
+         pre: {},
+         preResponses: {},
+         info: 
+          { received: 1497984125639,
+            responded: 1497984125700,
+            remoteAddress: &#x27;127.0.0.1&#x27;,
+            remotePort: &#x27;&#x27;,
+            referrer: &#x27;&#x27;,
+            host: &#x27;localhost:8080&#x27;,
+            acceptEncoding: &#x27;identity&#x27;,
+            hostname: &#x27;localhost&#x27; },
+         orig: { params: [Object] },
+         params: { number: 2 },
+         paramsArray: [ &#x27;2&#x27; ],
+         payload: null,
+         state: {},
+         jsonp: null,
+         response: 
+          EventEmitter {
+            domain: [Object],
+            _events: {},
+            _eventsCount: 0,
+            _maxListeners: undefined,
+            request: [Circular],
+            statusCode: 200,
+            headers: [Object],
+            variety: &#x27;plain&#x27;,
+            source: &#x27;Hello 2!&#x27;,
+            app: {},
+            plugins: {},
+            send: null,
+            hold: undefined,
+            settings: [Object],
+            _payload: [Object],
+            _takeover: false,
+            _contentEncoding: null,
+            _contentType: &#x27;text/html&#x27;,
+            _error: null,
+            _processors: [Object] },
+         raw: { req: [Object], res: [Object] },
+         addTail: undefined,
+         tail: undefined,
+         _states: {},
+         _entity: {},
+         _logger: [ [Object], [Object], [Object] ],
+         _allowInternals: false,
+         _isPayloadPending: true,
+         _isBailed: false,
+         _isReplied: true,
+         _isFinalized: true,
+         _tails: {},
+         _tailIds: 0,
+         _protect: { _error: null, logger: [Object], domain: [Object] },
+         _onEnd: [Function],
+         _onClose: [Function],
+         _onError: [Function],
+         render: [Function] } } to equal specified value: &#x27;Hello 2!&#x27;
+        at internals.equal (G:\projects\NodeJs\VS Code\hapi\services\node_modules\code\lib\index.js:278:17)
+        at Server.inject (G:\projects\NodeJs\VS Code\hapi\services\test\handler\index.js:28:30)
+        at Shot.inject (G:\projects\NodeJs\VS Code\hapi\services\node_modules\hapi\lib\connection.js:315:16)
+        at process.nextTick (G:\projects\NodeJs\VS Code\hapi\services\node_modules\shot\lib\response.js:26:36)
+        at _combinedTickCallback (internal/process/next_tick.js:67:7)
+        at process._tickDomainCallback (internal/process/next_tick.js:122:9)</div>
+              </td>
+              <td class="test-duration">311</td>
+          </tr>
+          <tr class="show functional_tests_-_products failure">
+              <td class="test-id">2</td>
+              <td class="test-title">functional tests - products should get single product
+                  <div class="stack">Error: Expected { raw: 
+       { res: 
+          Response {
+            domain: [Object],
+            _events: {},
+            _eventsCount: 0,
+            _maxListeners: undefined,
+            output: [],
+            outputEncodings: [],
+            outputCallbacks: [],
+            outputSize: 0,
+            writable: true,
+            _last: false,
+            chunkedEncoding: false,
+            shouldKeepAlive: true,
+            useChunkedEncodingByDefault: true,
+            sendDate: true,
+            _removedHeader: [Object],
+            _contentLength: null,
+            _hasBody: true,
+            _trailer: &#x27;&#x27;,
+            finished: true,
+            _headerSent: true,
+            socket: [Object],
+            connection: [Object],
+            _header: &#x27;HTTP/1.1 200 OK\r\ncontent-type: text/html; charset&#x3D;utf-8\r\ncache-control: no-cache\r\ncontent-length: 12\r\naccept-ranges: bytes\r\nDate: Tue, 20 Jun 2017 18:42:05 GMT\r\nConnection: keep-alive\r\n\r\n&#x27;,
+            _headers: [Object],
+            _headerNames: [Object],
+            _onPendingData: null,
+            _shot: [Object],
+            statusMessage: &#x27;OK&#x27;,
+            statusCode: 200 },
+         req: 
+          Readable {
+            _readableState: [Object],
+            readable: true,
+            domain: [Object],
+            _events: {},
+            _eventsCount: 0,
+            _maxListeners: undefined,
+            url: &#x27;/&#x27;,
+            httpVersion: &#x27;1.1&#x27;,
+            method: &#x27;GET&#x27;,
+            headers: [Object],
+            connection: [Object],
+            _shot: [Object] } },
+      headers: 
+       { &#x27;content-type&#x27;: &#x27;text/html; charset&#x3D;utf-8&#x27;,
+         &#x27;cache-control&#x27;: &#x27;no-cache&#x27;,
+         &#x27;content-length&#x27;: 12,
+         &#x27;accept-ranges&#x27;: &#x27;bytes&#x27;,
+         date: &#x27;Tue, 20 Jun 2017 18:42:05 GMT&#x27;,
+         connection: &#x27;keep-alive&#x27; },
+      statusCode: 200,
+      statusMessage: &#x27;OK&#x27;,
+      trailers: {},
+      rawPayload: &lt;Buffer 48 65 6c 6c 6f 20 57 6f 72 6c 64 21&gt;,
+      payload: &#x27;Hello World!&#x27;,
+      result: &#x27;Hello World!&#x27;,
+      request: 
+       EventEmitter {
+         domain: 
+          Domain {
+            domain: null,
+            _events: [Object],
+            _eventsCount: 1,
+            _maxListeners: undefined,
+            members: [] },
+         _events: {},
+         _eventsCount: 0,
+         _maxListeners: undefined,
+         _bench: { ts: 8087973.7429 },
+         connection: 
+          EventEmitter {
+            domain: null,
+            _events: [Object],
+            _eventsCount: 6,
+            _maxListeners: undefined,
+            settings: [Object],
+            server: [Object],
+            type: &#x27;tcp&#x27;,
+            _started: true,
+            _connections: {},
+            _onConnection: [Function],
+            registrations: [Object],
+            _extensions: [Object],
+            _requestCounter: [Object],
+            _load: [Object],
+            states: [Object],
+            auth: [Object],
+            _router: [Object],
+            plugins: {},
+            app: {},
+            listener: [Object],
+            info: [Object] },
+         server: 
+          EventEmitter {
+            _settings: [Object],
+            _caches: [Object],
+            _handlers: [Object],
+            _methods: [Object],
+            _events: [Object],
+            _dependencies: [Object],
+            _registrations: [Object],
+            _heavy: [Object],
+            _mime: [Object],
+            _replier: [Object],
+            _requestor: [Object],
+            _decorations: [Object],
+            _plugins: [Object],
+            _app: {},
+            _registring: false,
+            _state: &#x27;started&#x27;,
+            _extensionsSeq: 12,
+            _extensions: [Object],
+            domain: null,
+            _maxListeners: undefined,
+            _sources: [Object],
+            _parent: null,
+            root: [Circular],
+            app: {},
+            connections: [Object],
+            load: [Object],
+            methods: {},
+            mime: [Object],
+            plugins: [Object],
+            settings: [Object],
+            version: &#x27;14.2.0&#x27;,
+            realm: [Object],
+            auth: [Object],
+            info: [Object],
+            listener: [Object],
+            registrations: [Object],
+            views: [Function],
+            render: [Function] },
+         url: 
+          Url {
+            protocol: null,
+            slashes: null,
+            auth: null,
+            host: null,
+            port: null,
+            hostname: null,
+            hash: null,
+            search: &#x27;&#x27;,
+            query: {},
+            pathname: &#x27;/&#x27;,
+            path: &#x27;/&#x27;,
+            href: &#x27;/&#x27; },
+         query: {},
+         path: &#x27;/&#x27;,
+         method: &#x27;get&#x27;,
+         mime: null,
+         setUrl: undefined,
+         setMethod: undefined,
+         headers: { &#x27;user-agent&#x27;: &#x27;shot&#x27;, host: &#x27;localhost:8080&#x27; },
+         id: &#x27;1497984125897:Sundar-PC:928:j45x2kc9:10001&#x27;,
+         app: {},
+         plugins: {},
+         _route: 
+          { settings: [Object],
+            connection: [Object],
+            server: [Object],
+            path: &#x27;/&#x27;,
+            method: &#x27;get&#x27;,
+            plugin: [Object],
+            _special: false,
+            _analysis: [Object],
+            params: [],
+            fingerprint: &#x27;/&#x27;,
+            public: [Object],
+            _prerequisites: null,
+            _extensions: [Object],
+            _cycle: [Object] },
+         route: 
+          { method: &#x27;get&#x27;,
+            path: &#x27;/&#x27;,
+            vhost: undefined,
+            realm: [Object],
+            settings: [Object],
+            fingerprint: &#x27;/&#x27; },
+         auth: 
+          { isAuthenticated: false,
+            credentials: null,
+            artifacts: null,
+            strategy: null,
+            mode: null,
+            error: null },
+         pre: {},
+         preResponses: {},
+         info: 
+          { received: 1497984125897,
+            responded: 1497984125908,
+            remoteAddress: &#x27;127.0.0.1&#x27;,
+            remotePort: &#x27;&#x27;,
+            referrer: &#x27;&#x27;,
+            host: &#x27;localhost:8080&#x27;,
+            acceptEncoding: &#x27;identity&#x27;,
+            hostname: &#x27;localhost&#x27; },
+         orig: {},
+         params: {},
+         paramsArray: [],
+         payload: null,
+         state: {},
+         jsonp: null,
+         response: 
+          EventEmitter {
+            domain: [Object],
+            _events: {},
+            _eventsCount: 0,
+            _maxListeners: undefined,
+            request: [Circular],
+            statusCode: 200,
+            headers: [Object],
+            variety: &#x27;plain&#x27;,
+            source: &#x27;Hello World!&#x27;,
+            app: {},
+            plugins: {},
+            send: null,
+            hold: undefined,
+            settings: [Object],
+            _payload: [Object],
+            _takeover: false,
+            _contentEncoding: null,
+            _contentType: &#x27;text/html&#x27;,
+            _error: null,
+            _processors: [Object] },
+         raw: { req: [Object], res: [Object] },
+         addTail: undefined,
+         tail: undefined,
+         _states: {},
+         _entity: {},
+         _logger: [ [Object], [Object], [Object] ],
+         _allowInternals: false,
+         _isPayloadPending: true,
+         _isBailed: false,
+         _isReplied: true,
+         _isFinalized: true,
+         _tails: {},
+         _tailIds: 0,
+         _protect: { _error: null, logger: [Object], domain: [Object] },
+         _onEnd: [Function],
+         _onClose: [Function],
+         _onError: [Function],
+         render: [Function] } } to equal specified value: &#x27;Hello World!&#x27;
+        at internals.equal (G:\projects\NodeJs\VS Code\hapi\services\node_modules\code\lib\index.js:278:17)
+        at Server.inject (G:\projects\NodeJs\VS Code\hapi\services\test\handler\index.js:40:30)
+        at Shot.inject (G:\projects\NodeJs\VS Code\hapi\services\node_modules\hapi\lib\connection.js:315:16)
+        at process.nextTick (G:\projects\NodeJs\VS Code\hapi\services\node_modules\shot\lib\response.js:26:36)
+        at _combinedTickCallback (internal/process/next_tick.js:67:7)
+        at process._tickDomainCallback (internal/process/next_tick.js:122:9)</div>
+              </td>
+              <td class="test-duration">100</td>
+          </tr>
+          <tr class="show functional_tests_-_get_documentation success">
+              <td class="test-id">3</td>
+              <td class="test-title">functional tests - get documentation should return documentation html
+                  
+              </td>
+              <td class="test-duration">17</td>
+          </tr>
+          </tbody>
+      </table>
+    
+    </div>    <div id="coverage">
+        <h1>Code Coverage Report</h1>
+        <div class="stats high">
+            <div class="percentage">90.98%</div>
+            <div class="sloc">244</div>
+            <div class="hits">222</div>
+            <div class="misses">22</div>
+        </div>
+        <div id="filters">
+          <input type="checkbox" checked="" onchange="filter(this)" value="generated" id="show-generated">
+          <label for="show-generated">Show generated files</label>
+        </div>
+        <div id="files">
+            <div class="file ">
+                <h2 id="server.js">server.js </h2>
+                <div class="stats high">
+                    <div class="percentage">88.89%</div>
+                    <div class="sloc">18</div>
+                    <div class="hits">16</div>
+                    <div class="misses">2</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Line</th>
+                            <th>Lint</th>
+                            <th>Hits</th>
+                            <th>Source</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="server.js__1" class="hit">
+                          <td class="line" data-tooltip>1</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">//TODO configure the eslint first</td>
+                          
+                        </tr>            <tr id="server.js__2" class="hit">
+                          <td class="line" data-tooltip>2</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const utilities &#x3D; {</td>
+                          
+                        </tr>            <tr id="server.js__3" class="hit">
+                          <td class="line" data-tooltip>3</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    Joi: require(&#x27;joi&#x27;),</td>
+                          
+                        </tr>            <tr id="server.js__4" class="hit">
+                          <td class="line" data-tooltip>4</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    _: require(&#x27;lodash&#x27;),</td>
+                          
+                        </tr>            <tr id="server.js__5" class="hit">
+                          <td class="line" data-tooltip>5</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    pckg: require(&#x27;./package.json&#x27;)</td>
+                          
+                        </tr>            <tr id="server.js__6" class="hit">
+                          <td class="line" data-tooltip>6</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">}</td>
+                          
+                        </tr>            <tr id="server.js__7" class="hit">
+                          <td class="line" data-tooltip>7</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="server.js__8" class="hit">
+                          <td class="line" data-tooltip>8</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">global.config &#x3D; {</td>
+                          
+                        </tr>            <tr id="server.js__9" class="hit">
+                          <td class="line" data-tooltip>9</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    utilities: utilities</td>
+                          
+                        </tr>            <tr id="server.js__10" class="hit">
+                          <td class="line" data-tooltip>10</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">}</td>
+                          
+                        </tr>            <tr id="server.js__11" class="hit">
+                          <td class="line" data-tooltip>11</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="server.js__12" class="hit">
+                          <td class="line" data-tooltip>12</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">logger &#x3D; require(&#x27;./log&#x27;)</td>
+                          
+                        </tr>            <tr id="server.js__13" class="hit">
+                          <td class="line" data-tooltip>13</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="server.js__14" class="hit">
+                          <td class="line" data-tooltip>14</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const server &#x3D; require(&#x27;./lib&#x27;)</td>
+                          
+                        </tr>            <tr id="server.js__15" class="hit">
+                          <td class="line" data-tooltip>15</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="server.js__16" class="hit">
+                          <td class="line" data-tooltip>16</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">server.start((err) &#x3D;&gt; {</td>
+                          
+                        </tr>            <tr id="server.js__17" class="chunks">
+                          <td class="line" data-tooltip>17</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"><div>    if (</div><div class="miss false" data-tooltip>err</div><div>)</div></td>
+                          
+                        </tr>            <tr id="server.js__18" class="miss">
+                          <td class="line" data-tooltip>18</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source" data-tooltip>        logger.error(err)</td>
+                          
+                        </tr>            <tr id="server.js__19" class="hit">
+                          <td class="line" data-tooltip>19</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    else {</td>
+                          
+                        </tr>            <tr id="server.js__20" class="hit">
+                          <td class="line" data-tooltip>20</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">        logger.info(&#x60;Server running at ${server.info.uri}&#x60;)</td>
+                          
+                        </tr>            <tr id="server.js__21" class="hit">
+                          <td class="line" data-tooltip>21</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    }</td>
+                          
+                        </tr>            <tr id="server.js__22" class="hit">
+                          <td class="line" data-tooltip>22</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">})</td>
+                          
+                        </tr>            <tr id="server.js__23" class="hit">
+                          <td class="line" data-tooltip>23</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="server.js__24" class="hit">
+                          <td class="line" data-tooltip>24</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">// TODO is needed for testing ??</td>
+                          
+                        </tr>            <tr id="server.js__25" class="hit">
+                          <td class="line" data-tooltip>25</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">module.exports &#x3D; server</td>
+                          
+                        </tr>        </tbody>
+                </table>
+            </div>
+            <div class="file ">
+                <h2 id="lib/index.js">lib/index.js </h2>
+                <div class="stats high">
+                    <div class="percentage">86.96%</div>
+                    <div class="sloc">23</div>
+                    <div class="hits">20</div>
+                    <div class="misses">3</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Line</th>
+                            <th>Lint</th>
+                            <th>Hits</th>
+                            <th>Source</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="lib/index.js__1" class="hit">
+                          <td class="line" data-tooltip>1</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">&#x27;use strict&#x27;</td>
+                          
+                        </tr>            <tr id="lib/index.js__2" class="hit">
+                          <td class="line" data-tooltip>2</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/index.js__3" class="hit">
+                          <td class="line" data-tooltip>3</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const Path &#x3D; require(&#x27;path&#x27;)</td>
+                          
+                        </tr>            <tr id="lib/index.js__4" class="hit">
+                          <td class="line" data-tooltip>4</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const Hapi &#x3D; require(&#x27;hapi&#x27;)</td>
+                          
+                        </tr>            <tr id="lib/index.js__5" class="hit">
+                          <td class="line" data-tooltip>5</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/index.js__6" class="hit">
+                          <td class="line" data-tooltip>6</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/index.js__7" class="hit">
+                          <td class="line" data-tooltip>7</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">//hapi registers plugins</td>
+                          
+                        </tr>            <tr id="lib/index.js__8" class="hit">
+                          <td class="line" data-tooltip>8</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const plugins &#x3D; require(&#x27;../lib/plugins&#x27;)</td>
+                          
+                        </tr>            <tr id="lib/index.js__9" class="hit">
+                          <td class="line" data-tooltip>9</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const routes &#x3D; require(&#x27;../lib/routes&#x27;)</td>
+                          
+                        </tr>            <tr id="lib/index.js__10" class="hit">
+                          <td class="line" data-tooltip>10</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/index.js__11" class="hit">
+                          <td class="line" data-tooltip>11</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const server &#x3D; new Hapi.Server({</td>
+                          
+                        </tr>            <tr id="lib/index.js__12" class="hit">
+                          <td class="line" data-tooltip>12</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    connections: {</td>
+                          
+                        </tr>            <tr id="lib/index.js__13" class="hit">
+                          <td class="line" data-tooltip>13</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        routes: {</td>
+                          
+                        </tr>            <tr id="lib/index.js__14" class="hit">
+                          <td class="line" data-tooltip>14</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">            files: {</td>
+                          
+                        </tr>            <tr id="lib/index.js__15" class="hit">
+                          <td class="line" data-tooltip>15</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">                relativeTo: Path.join(__dirname, &#x27;lib&#x27;, &#x27;public&#x27;)</td>
+                          
+                        </tr>            <tr id="lib/index.js__16" class="hit">
+                          <td class="line" data-tooltip>16</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">            }</td>
+                          
+                        </tr>            <tr id="lib/index.js__17" class="hit">
+                          <td class="line" data-tooltip>17</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        }</td>
+                          
+                        </tr>            <tr id="lib/index.js__18" class="hit">
+                          <td class="line" data-tooltip>18</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    }</td>
+                          
+                        </tr>            <tr id="lib/index.js__19" class="hit">
+                          <td class="line" data-tooltip>19</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">})</td>
+                          
+                        </tr>            <tr id="lib/index.js__20" class="hit">
+                          <td class="line" data-tooltip>20</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/index.js__21" class="hit">
+                          <td class="line" data-tooltip>21</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">// server connection details</td>
+                          
+                        </tr>            <tr id="lib/index.js__22" class="chunks">
+                          <td class="line" data-tooltip>22</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"><div>server.connection({ host: &#x27;localhost&#x27;, port: </div><div class="miss false" data-tooltip>process.env.PORT</div><div> || &#x27;8080&#x27; })</div></td>
+                          
+                        </tr>            <tr id="lib/index.js__23" class="hit">
+                          <td class="line" data-tooltip>23</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/index.js__24" class="hit">
+                          <td class="line" data-tooltip>24</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">//server routes</td>
+                          
+                        </tr>            <tr id="lib/index.js__25" class="hit">
+                          <td class="line" data-tooltip>25</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">server.register(plugins, (err) &#x3D;&gt; {</td>
+                          
+                        </tr>            <tr id="lib/index.js__26" class="chunks">
+                          <td class="line" data-tooltip>26</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"><div>    if (</div><div class="miss false" data-tooltip>err</div><div>) {</div></td>
+                          
+                        </tr>            <tr id="lib/index.js__27" class="miss">
+                          <td class="line" data-tooltip>27</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source" data-tooltip>        logger.error(&#x60;Error on registering Good plugin ${err.stack || err}&#x60;)</td>
+                          
+                        </tr>            <tr id="lib/index.js__28" class="hit">
+                          <td class="line" data-tooltip>28</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    }</td>
+                          
+                        </tr>            <tr id="lib/index.js__29" class="hit">
+                          <td class="line" data-tooltip>29</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/index.js__30" class="hit">
+                          <td class="line" data-tooltip>30</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">    logger.log(&#x60;running env is ${process.env.NODE_ENV}&#x60;)</td>
+                          
+                        </tr>            <tr id="lib/index.js__31" class="hit">
+                          <td class="line" data-tooltip>31</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">})</td>
+                          
+                        </tr>            <tr id="lib/index.js__32" class="hit">
+                          <td class="line" data-tooltip>32</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/index.js__33" class="hit">
+                          <td class="line" data-tooltip>33</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">server.route(routes)</td>
+                          
+                        </tr>            <tr id="lib/index.js__34" class="hit">
+                          <td class="line" data-tooltip>34</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/index.js__35" class="hit">
+                          <td class="line" data-tooltip>35</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">module.exports &#x3D; server</td>
+                          
+                        </tr>        </tbody>
+                </table>
+            </div>
+            <div class="file ">
+                <h2 id="lib/api/examples.js">lib/api/examples.js </h2>
+                <div class="stats high">
+                    <div class="percentage">100%</div>
+                    <div class="sloc">9</div>
+                    <div class="hits">9</div>
+                    <div class="misses">0</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Line</th>
+                            <th>Lint</th>
+                            <th>Hits</th>
+                            <th>Source</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="lib/api/examples.js__1" class="hit">
+                          <td class="line" data-tooltip>1</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">//TODO usage of classes with constructor</td>
+                          
+                        </tr>            <tr id="lib/api/examples.js__2" class="hit">
+                          <td class="line" data-tooltip>2</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">class Examples {</td>
+                          
+                        </tr>            <tr id="lib/api/examples.js__3" class="hit">
+                          <td class="line" data-tooltip>3</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    static helloWorld(request, reply) {</td>
+                          
+                        </tr>            <tr id="lib/api/examples.js__4" class="hit">
+                          <td class="line" data-tooltip>4</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        reply(&#x27;Hello World!&#x27;)</td>
+                          
+                        </tr>            <tr id="lib/api/examples.js__5" class="hit">
+                          <td class="line" data-tooltip>5</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    }</td>
+                          
+                        </tr>            <tr id="lib/api/examples.js__6" class="hit">
+                          <td class="line" data-tooltip>6</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/api/examples.js__7" class="hit">
+                          <td class="line" data-tooltip>7</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    static replyParam(request, reply) {</td>
+                          
+                        </tr>            <tr id="lib/api/examples.js__8" class="hit">
+                          <td class="line" data-tooltip>8</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        reply(&#x60;Hello ${encodeURIComponent(request.params.number)}!&#x60;)//INFO use encodeURIComponent for request params</td>
+                          
+                        </tr>            <tr id="lib/api/examples.js__9" class="hit">
+                          <td class="line" data-tooltip>9</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    }</td>
+                          
+                        </tr>            <tr id="lib/api/examples.js__10" class="hit">
+                          <td class="line" data-tooltip>10</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">}</td>
+                          
+                        </tr>            <tr id="lib/api/examples.js__11" class="hit">
+                          <td class="line" data-tooltip>11</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/api/examples.js__12" class="hit">
+                          <td class="line" data-tooltip>12</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">module.exports &#x3D; Examples</td>
+                          
+                        </tr>        </tbody>
+                </table>
+            </div>
+            <div class="file ">
+                <h2 id="lib/plugins/hapi-tracer.js">lib/plugins/hapi-tracer.js </h2>
+                <div class="stats high">
+                    <div class="percentage">87.50%</div>
+                    <div class="sloc">32</div>
+                    <div class="hits">28</div>
+                    <div class="misses">4</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Line</th>
+                            <th>Lint</th>
+                            <th>Hits</th>
+                            <th>Source</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="lib/plugins/hapi-tracer.js__1" class="hit">
+                          <td class="line" data-tooltip>1</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const hapiTracer &#x3D; {</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__2" class="hit">
+                          <td class="line" data-tooltip>2</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">  register: function (server, options, next) {</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__3" class="hit">
+                          <td class="line" data-tooltip>3</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__4" class="hit">
+                          <td class="line" data-tooltip>4</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    server.on(&#x27;response&#x27;, function (request) {</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__5" class="hit">
+                          <td class="line" data-tooltip>5</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">      logger.info(&#x60;From ${request.info.remoteAddress}: ${request.method.toUpperCase()} -- ${request.connection.info.uri}${request.url.path} -- ${request.response.statusCode} in (${Date.now() - request.info.received}ms)&#x60;</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__6" class="hit">
+                          <td class="line" data-tooltip>6</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">      )</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__7" class="hit">
+                          <td class="line" data-tooltip>7</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">      /* logger.info(&#x27;Request payload:&#x27;, request.payload);</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__8" class="hit">
+                          <td class="line" data-tooltip>8</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">       logger.info(&#x27;Response payload:&#x27;, request.response.source);</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__9" class="hit">
+                          <td class="line" data-tooltip>9</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">       //TODO these logs too needed*/</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__10" class="hit">
+                          <td class="line" data-tooltip>10</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    });</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__11" class="hit">
+                          <td class="line" data-tooltip>11</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__12" class="hit">
+                          <td class="line" data-tooltip>12</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">    next()</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__13" class="hit">
+                          <td class="line" data-tooltip>13</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">  }</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__14" class="hit">
+                          <td class="line" data-tooltip>14</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">}</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__15" class="hit">
+                          <td class="line" data-tooltip>15</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__16" class="hit">
+                          <td class="line" data-tooltip>16</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">hapiTracer.register.attributes &#x3D; {</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__17" class="hit">
+                          <td class="line" data-tooltip>17</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">  name: &#x27;hapi-tracer&#x27;,</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__18" class="hit">
+                          <td class="line" data-tooltip>18</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">  version: &#x27;1.0.0&#x27;</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__19" class="hit">
+                          <td class="line" data-tooltip>19</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">}</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__20" class="hit">
+                          <td class="line" data-tooltip>20</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__21" class="hit">
+                          <td class="line" data-tooltip>21</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__22" class="hit">
+                          <td class="line" data-tooltip>22</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">//error handling for failed requests</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__23" class="hit">
+                          <td class="line" data-tooltip>23</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const fileNotFound &#x3D; {</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__24" class="hit">
+                          <td class="line" data-tooltip>24</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">  register: function (server, options, next) {</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__25" class="hit">
+                          <td class="line" data-tooltip>25</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    server.ext(&#x27;onPostHandler&#x27;, function (request, reply) {</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__26" class="hit">
+                          <td class="line" data-tooltip>26</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__27" class="hit">
+                          <td class="line" data-tooltip>27</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">      const response &#x3D; request.response;</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__28" class="hit">
+                          <td class="line" data-tooltip>28</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">      //console.log(&#x60;isBoom: ${response.isBoom}, statusCode :${response.output.statusCode}&#x60;)</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__29" class="chunks">
+                          <td class="line" data-tooltip>29</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"><div>      if (</div><div class="miss false" data-tooltip>response.isBoom</div><div> &amp;&amp; </div><div class="miss never" data-tooltip>response.output</div><div> &amp;&amp;</div></td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__30" class="chunks">
+                          <td class="line" data-tooltip>30</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"><div>        </div><div class="miss never" data-tooltip>response.output.statusCode &#x3D;&#x3D;&#x3D; 404</div><div>) {</div></td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__31" class="miss">
+                          <td class="line" data-tooltip>31</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source" data-tooltip>          console.log(&#x60;fadgfasghdfah&#x60;)</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__32" class="miss">
+                          <td class="line" data-tooltip>32</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source" data-tooltip>        return reply.file(&#x27;404.html&#x27;).code(404);</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__33" class="hit">
+                          <td class="line" data-tooltip>33</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">      }</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__34" class="hit">
+                          <td class="line" data-tooltip>34</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>3</td>
+                          <td class="source">      return reply.continue();</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__35" class="hit">
+                          <td class="line" data-tooltip>35</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    });</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__36" class="hit">
+                          <td class="line" data-tooltip>36</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">    next()</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__37" class="hit">
+                          <td class="line" data-tooltip>37</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">  }</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__38" class="hit">
+                          <td class="line" data-tooltip>38</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">}</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__39" class="hit">
+                          <td class="line" data-tooltip>39</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__40" class="hit">
+                          <td class="line" data-tooltip>40</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">fileNotFound.register.attributes &#x3D; {</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__41" class="hit">
+                          <td class="line" data-tooltip>41</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">  name: &#x27;file-not-found&#x27;,</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__42" class="hit">
+                          <td class="line" data-tooltip>42</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">  version: &#x27;1.0.0&#x27;</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__43" class="hit">
+                          <td class="line" data-tooltip>43</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">}</td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__44" class="hit">
+                          <td class="line" data-tooltip>44</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/plugins/hapi-tracer.js__45" class="hit">
+                          <td class="line" data-tooltip>45</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">module.exports &#x3D; [{ register: hapiTracer },{ register: fileNotFound }]</td>
+                          
+                        </tr>        </tbody>
+                </table>
+            </div>
+            <div class="file ">
+                <h2 id="lib/plugins/index.js">lib/plugins/index.js </h2>
+                <div class="stats high">
+                    <div class="percentage">100%</div>
+                    <div class="sloc">33</div>
+                    <div class="hits">33</div>
+                    <div class="misses">0</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Line</th>
+                            <th>Lint</th>
+                            <th>Hits</th>
+                            <th>Source</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="lib/plugins/index.js__1" class="hit">
+                          <td class="line" data-tooltip>1</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">//TODO authentication plugin</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__2" class="hit">
+                          <td class="line" data-tooltip>2</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__3" class="hit">
+                          <td class="line" data-tooltip>3</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const Inert &#x3D; require(&#x27;inert&#x27;) //INFO for static page serving</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__4" class="hit">
+                          <td class="line" data-tooltip>4</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const Vision &#x3D; require(&#x27;vision&#x27;) //Template for hapi-swagger</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__5" class="hit">
+                          <td class="line" data-tooltip>5</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const HapiSwagger &#x3D; require(&#x27;hapi-swagger&#x27;)</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__6" class="hit">
+                          <td class="line" data-tooltip>6</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__7" class="hit">
+                          <td class="line" data-tooltip>7</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const HapiTracer &#x3D; require(&#x27;./hapi-tracer&#x27;) // INFO customized plugin using tracer</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__8" class="hit">
+                          <td class="line" data-tooltip>8</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const OnRequest &#x3D; require(&#x27;./onRequest&#x27;) // INFO customized plugin using tracer</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__9" class="hit">
+                          <td class="line" data-tooltip>9</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__10" class="hit">
+                          <td class="line" data-tooltip>10</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const pckg &#x3D; global.config.utilities.pckg</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__11" class="hit">
+                          <td class="line" data-tooltip>11</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const swaggerInfo &#x3D; {</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__12" class="hit">
+                          <td class="line" data-tooltip>12</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    info: {</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__13" class="hit">
+                          <td class="line" data-tooltip>13</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        title: pckg.name,</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__14" class="hit">
+                          <td class="line" data-tooltip>14</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        version: pckg.version,</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__15" class="hit">
+                          <td class="line" data-tooltip>15</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        contact: {</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__16" class="hit">
+                          <td class="line" data-tooltip>16</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">                name: pckg.author,</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__17" class="hit">
+                          <td class="line" data-tooltip>17</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">                email: pckg.authorEmail</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__18" class="hit">
+                          <td class="line" data-tooltip>18</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        }</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__19" class="hit">
+                          <td class="line" data-tooltip>19</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    },</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__20" class="hit">
+                          <td class="line" data-tooltip>20</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    tags: [{</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__21" class="hit">
+                          <td class="line" data-tooltip>21</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        name: &#x27;examples&#x27;,</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__22" class="hit">
+                          <td class="line" data-tooltip>22</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        description: &#x27;Example Apis&#x27;</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__23" class="hit">
+                          <td class="line" data-tooltip>23</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    }, {</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__24" class="hit">
+                          <td class="line" data-tooltip>24</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        name: &#x27;publicpages&#x27;,</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__25" class="hit">
+                          <td class="line" data-tooltip>25</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        description: &#x27;Returning the static HTML pagesfrom md&#x27;</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__26" class="hit">
+                          <td class="line" data-tooltip>26</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    }]/*,</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__27" class="hit">
+                          <td class="line" data-tooltip>27</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    sortTags: &#x27;name&#x27;,</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__28" class="hit">
+                          <td class="line" data-tooltip>28</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    sortEndpoints: &#x27;ordered&#x27;*/</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__29" class="hit">
+                          <td class="line" data-tooltip>29</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">}</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__30" class="hit">
+                          <td class="line" data-tooltip>30</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__31" class="hit">
+                          <td class="line" data-tooltip>31</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const hapiPlugins &#x3D; [{</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__32" class="hit">
+                          <td class="line" data-tooltip>32</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    register: Inert,</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__33" class="hit">
+                          <td class="line" data-tooltip>33</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    options: {}</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__34" class="hit">
+                          <td class="line" data-tooltip>34</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">}, {</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__35" class="hit">
+                          <td class="line" data-tooltip>35</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    register: Vision</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__36" class="hit">
+                          <td class="line" data-tooltip>36</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">}, {</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__37" class="hit">
+                          <td class="line" data-tooltip>37</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    register: HapiSwagger,</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__38" class="hit">
+                          <td class="line" data-tooltip>38</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    options: swaggerInfo</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__39" class="hit">
+                          <td class="line" data-tooltip>39</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">}]</td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__40" class="hit">
+                          <td class="line" data-tooltip>40</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__41" class="hit">
+                          <td class="line" data-tooltip>41</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/plugins/index.js__42" class="hit">
+                          <td class="line" data-tooltip>42</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">module.exports &#x3D; hapiPlugins.concat(HapiTracer, OnRequest)</td>
+                          
+                        </tr>        </tbody>
+                </table>
+            </div>
+            <div class="file ">
+                <h2 id="lib/plugins/onRequest.js">lib/plugins/onRequest.js </h2>
+                <div class="stats high">
+                    <div class="percentage">84.21%</div>
+                    <div class="sloc">19</div>
+                    <div class="hits">16</div>
+                    <div class="misses">3</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Line</th>
+                            <th>Lint</th>
+                            <th>Hits</th>
+                            <th>Source</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="lib/plugins/onRequest.js__1" class="hit">
+                          <td class="line" data-tooltip>1</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const onRequest &#x3D; {</td>
+                          
+                        </tr>            <tr id="lib/plugins/onRequest.js__2" class="hit">
+                          <td class="line" data-tooltip>2</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    register: function (server, options, next) {</td>
+                          
+                        </tr>            <tr id="lib/plugins/onRequest.js__3" class="hit">
+                          <td class="line" data-tooltip>3</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/plugins/onRequest.js__4" class="hit">
+                          <td class="line" data-tooltip>4</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        server.ext(&#x27;onRequest&#x27;, function (request, reply) {</td>
+                          
+                        </tr>            <tr id="lib/plugins/onRequest.js__5" class="hit">
+                          <td class="line" data-tooltip>5</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">            logger.info(request.method.toLowerCase())</td>
+                          
+                        </tr>            <tr id="lib/plugins/onRequest.js__6" class="chunks">
+                          <td class="line" data-tooltip>6</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"><div>            if (</div><div class="miss false" data-tooltip>request.method.toLowerCase() &#x3D;&#x3D; &#x27;options&#x27;</div><div>) {</div></td>
+                          
+                        </tr>            <tr id="lib/plugins/onRequest.js__7" class="miss">
+                          <td class="line" data-tooltip>7</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source" data-tooltip>                logger.info(&#x60;Returned the options method call with success response&#x60;)</td>
+                          
+                        </tr>            <tr id="lib/plugins/onRequest.js__8" class="miss">
+                          <td class="line" data-tooltip>8</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source" data-tooltip>                return reply(&#x27;success&#x27;)</td>
+                          
+                        </tr>            <tr id="lib/plugins/onRequest.js__9" class="hit">
+                          <td class="line" data-tooltip>9</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">            } else {</td>
+                          
+                        </tr>            <tr id="lib/plugins/onRequest.js__10" class="hit">
+                          <td class="line" data-tooltip>10</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>3</td>
+                          <td class="source">                return reply.continue();</td>
+                          
+                        </tr>            <tr id="lib/plugins/onRequest.js__11" class="hit">
+                          <td class="line" data-tooltip>11</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">            }</td>
+                          
+                        </tr>            <tr id="lib/plugins/onRequest.js__12" class="hit">
+                          <td class="line" data-tooltip>12</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        })</td>
+                          
+                        </tr>            <tr id="lib/plugins/onRequest.js__13" class="hit">
+                          <td class="line" data-tooltip>13</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">        next()</td>
+                          
+                        </tr>            <tr id="lib/plugins/onRequest.js__14" class="hit">
+                          <td class="line" data-tooltip>14</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    }</td>
+                          
+                        </tr>            <tr id="lib/plugins/onRequest.js__15" class="hit">
+                          <td class="line" data-tooltip>15</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">}</td>
+                          
+                        </tr>            <tr id="lib/plugins/onRequest.js__16" class="hit">
+                          <td class="line" data-tooltip>16</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/plugins/onRequest.js__17" class="hit">
+                          <td class="line" data-tooltip>17</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">onRequest.register.attributes &#x3D; {</td>
+                          
+                        </tr>            <tr id="lib/plugins/onRequest.js__18" class="hit">
+                          <td class="line" data-tooltip>18</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">  name: &#x27;onRequest&#x27;,</td>
+                          
+                        </tr>            <tr id="lib/plugins/onRequest.js__19" class="hit">
+                          <td class="line" data-tooltip>19</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">  version: &#x27;1.0.0&#x27;</td>
+                          
+                        </tr>            <tr id="lib/plugins/onRequest.js__20" class="hit">
+                          <td class="line" data-tooltip>20</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">}</td>
+                          
+                        </tr>            <tr id="lib/plugins/onRequest.js__21" class="hit">
+                          <td class="line" data-tooltip>21</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/plugins/onRequest.js__22" class="hit">
+                          <td class="line" data-tooltip>22</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">module.exports &#x3D; [{ register: onRequest }]</td>
+                          
+                        </tr>        </tbody>
+                </table>
+            </div>
+            <div class="file ">
+                <h2 id="lib/routes/examples.js">lib/routes/examples.js </h2>
+                <div class="stats high">
+                    <div class="percentage">100%</div>
+                    <div class="sloc">24</div>
+                    <div class="hits">24</div>
+                    <div class="misses">0</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Line</th>
+                            <th>Lint</th>
+                            <th>Hits</th>
+                            <th>Source</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="lib/routes/examples.js__1" class="hit">
+                          <td class="line" data-tooltip>1</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const api &#x3D; require(&#x27;../api/examples.js&#x27;)</td>
+                          
+                        </tr>            <tr id="lib/routes/examples.js__2" class="hit">
+                          <td class="line" data-tooltip>2</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const schemas &#x3D; require(&#x27;../schemas/examples&#x27;)</td>
+                          
+                        </tr>            <tr id="lib/routes/examples.js__3" class="hit">
+                          <td class="line" data-tooltip>3</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/routes/examples.js__4" class="hit">
+                          <td class="line" data-tooltip>4</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">module.exports &#x3D; [</td>
+                          
+                        </tr>            <tr id="lib/routes/examples.js__5" class="hit">
+                          <td class="line" data-tooltip>5</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    {</td>
+                          
+                        </tr>            <tr id="lib/routes/examples.js__6" class="hit">
+                          <td class="line" data-tooltip>6</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        method: &#x27;GET&#x27;,</td>
+                          
+                        </tr>            <tr id="lib/routes/examples.js__7" class="hit">
+                          <td class="line" data-tooltip>7</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        path: &#x27;/&#x27;,</td>
+                          
+                        </tr>            <tr id="lib/routes/examples.js__8" class="hit">
+                          <td class="line" data-tooltip>8</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        config: { //INFO config part is for swagger</td>
+                          
+                        </tr>            <tr id="lib/routes/examples.js__9" class="hit">
+                          <td class="line" data-tooltip>9</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">            handler: api.helloWorld,</td>
+                          
+                        </tr>            <tr id="lib/routes/examples.js__10" class="hit">
+                          <td class="line" data-tooltip>10</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">            description: &#x27;Get Hello World&#x27;,</td>
+                          
+                        </tr>            <tr id="lib/routes/examples.js__11" class="hit">
+                          <td class="line" data-tooltip>11</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">            notes: &#x27;returns Hello world!&#x27;,</td>
+                          
+                        </tr>            <tr id="lib/routes/examples.js__12" class="hit">
+                          <td class="line" data-tooltip>12</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">            tags: [&#x27;examples&#x27;,&#x27;api&#x27;] //INFO tag will be useful for filtering the endpoints -- /documentation?tags&#x3D;api</td>
+                          
+                        </tr>            <tr id="lib/routes/examples.js__13" class="hit">
+                          <td class="line" data-tooltip>13</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        },</td>
+                          
+                        </tr>            <tr id="lib/routes/examples.js__14" class="hit">
+                          <td class="line" data-tooltip>14</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    }, {</td>
+                          
+                        </tr>            <tr id="lib/routes/examples.js__15" class="hit">
+                          <td class="line" data-tooltip>15</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        method: &#x27;GET&#x27;,</td>
+                          
+                        </tr>            <tr id="lib/routes/examples.js__16" class="hit">
+                          <td class="line" data-tooltip>16</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        path: &#x27;/{number}&#x27;,</td>
+                          
+                        </tr>            <tr id="lib/routes/examples.js__17" class="hit">
+                          <td class="line" data-tooltip>17</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        config: { //INFO config part is for swagger</td>
+                          
+                        </tr>            <tr id="lib/routes/examples.js__18" class="hit">
+                          <td class="line" data-tooltip>18</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">            handler: api.replyParam,</td>
+                          
+                        </tr>            <tr id="lib/routes/examples.js__19" class="hit">
+                          <td class="line" data-tooltip>19</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">            description: &#x27;Get Hello World with the param returned&#x27;,</td>
+                          
+                        </tr>            <tr id="lib/routes/examples.js__20" class="hit">
+                          <td class="line" data-tooltip>20</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">            notes: &#x27;return Hello params.arg[1]!&#x27;,</td>
+                          
+                        </tr>            <tr id="lib/routes/examples.js__21" class="hit">
+                          <td class="line" data-tooltip>21</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">            tags: [&#x27;examples&#x27;,&#x27;api&#x27;], //INFO tag will be useful for filtering the endpoints -- /documentation?tags&#x3D;api</td>
+                          
+                        </tr>            <tr id="lib/routes/examples.js__22" class="hit">
+                          <td class="line" data-tooltip>22</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">            validate: schemas.replyParam //INFO schema validation can be done by using Joi</td>
+                          
+                        </tr>            <tr id="lib/routes/examples.js__23" class="hit">
+                          <td class="line" data-tooltip>23</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        }</td>
+                          
+                        </tr>            <tr id="lib/routes/examples.js__24" class="hit">
+                          <td class="line" data-tooltip>24</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    }</td>
+                          
+                        </tr>            <tr id="lib/routes/examples.js__25" class="hit">
+                          <td class="line" data-tooltip>25</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">]</td>
+                          
+                        </tr>        </tbody>
+                </table>
+            </div>
+            <div class="file ">
+                <h2 id="lib/routes/index.js">lib/routes/index.js </h2>
+                <div class="stats high">
+                    <div class="percentage">100%</div>
+                    <div class="sloc">4</div>
+                    <div class="hits">4</div>
+                    <div class="misses">0</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Line</th>
+                            <th>Lint</th>
+                            <th>Hits</th>
+                            <th>Source</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="lib/routes/index.js__1" class="hit">
+                          <td class="line" data-tooltip>1</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">//TODO load all the js files in this folder</td>
+                          
+                        </tr>            <tr id="lib/routes/index.js__2" class="hit">
+                          <td class="line" data-tooltip>2</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const {concat} &#x3D; global.config.utilities._</td>
+                          
+                        </tr>            <tr id="lib/routes/index.js__3" class="hit">
+                          <td class="line" data-tooltip>3</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/routes/index.js__4" class="hit">
+                          <td class="line" data-tooltip>4</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const publicPages &#x3D; require(&#x27;./publicPages&#x27;)</td>
+                          
+                        </tr>            <tr id="lib/routes/index.js__5" class="hit">
+                          <td class="line" data-tooltip>5</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const examples &#x3D; require(&#x27;./examples&#x27;)</td>
+                          
+                        </tr>            <tr id="lib/routes/index.js__6" class="hit">
+                          <td class="line" data-tooltip>6</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/routes/index.js__7" class="hit">
+                          <td class="line" data-tooltip>7</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">module.exports &#x3D; concat(publicPages, examples)</td>
+                          
+                        </tr>            <tr id="lib/routes/index.js__8" class="hit">
+                          <td class="line" data-tooltip>8</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>        </tbody>
+                </table>
+            </div>
+            <div class="file ">
+                <h2 id="lib/routes/publicPages.js">lib/routes/publicPages.js </h2>
+                <div class="stats high">
+                    <div class="percentage">76.92%</div>
+                    <div class="sloc">26</div>
+                    <div class="hits">20</div>
+                    <div class="misses">6</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Line</th>
+                            <th>Lint</th>
+                            <th>Hits</th>
+                            <th>Source</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="lib/routes/publicPages.js__1" class="hit">
+                          <td class="line" data-tooltip>1</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const Path &#x3D; require(&#x27;path&#x27;)</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__2" class="hit">
+                          <td class="line" data-tooltip>2</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const fs &#x3D; require(&#x27;fs&#x27;)</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__3" class="hit">
+                          <td class="line" data-tooltip>3</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const Boom &#x3D; require(&#x27;boom&#x27;)</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__4" class="hit">
+                          <td class="line" data-tooltip>4</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const showdown &#x3D; require(&#x27;showdown&#x27;),</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__5" class="hit">
+                          <td class="line" data-tooltip>5</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    converter &#x3D; new showdown.Converter()</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__6" class="hit">
+                          <td class="line" data-tooltip>6</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const publicPagesPath &#x3D; Path.join(__dirname, &#x27;../&#x27;,&#x27;public&#x27;)</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__7" class="hit">
+                          <td class="line" data-tooltip>7</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__8" class="hit">
+                          <td class="line" data-tooltip>8</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">// converter.makeHtml(text); //TODO directory public pages serving</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__9" class="hit">
+                          <td class="line" data-tooltip>9</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__10" class="hit">
+                          <td class="line" data-tooltip>10</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">module.exports &#x3D; [/*{</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__11" class="hit">
+                          <td class="line" data-tooltip>11</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    method: &#x27;GET&#x27;,</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__12" class="hit">
+                          <td class="line" data-tooltip>12</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    path: &#x27;/public/{param*}&#x27;,</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__13" class="hit">
+                          <td class="line" data-tooltip>13</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    config: {</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__14" class="hit">
+                          <td class="line" data-tooltip>14</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        handler: {</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__15" class="hit">
+                          <td class="line" data-tooltip>15</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">            directory: {</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__16" class="hit">
+                          <td class="line" data-tooltip>16</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">                path: &#x27;../public&#x27;,</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__17" class="hit">
+                          <td class="line" data-tooltip>17</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">                redirectToSlash: true,</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__18" class="hit">
+                          <td class="line" data-tooltip>18</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">                index: true,</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__19" class="hit">
+                          <td class="line" data-tooltip>19</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">                defaultExtension: &#x27;md&#x27;</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__20" class="hit">
+                          <td class="line" data-tooltip>20</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">            }</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__21" class="hit">
+                          <td class="line" data-tooltip>21</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        },</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__22" class="hit">
+                          <td class="line" data-tooltip>22</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        description: &#x27;Return the hello.md&#x27;,</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__23" class="hit">
+                          <td class="line" data-tooltip>23</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        notes: &#x27;Return hello.md&#x27;,</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__24" class="hit">
+                          <td class="line" data-tooltip>24</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        tags: [&#x27;api&#x27;, &#x27;publicpages&#x27;]</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__25" class="hit">
+                          <td class="line" data-tooltip>25</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    }</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__26" class="hit">
+                          <td class="line" data-tooltip>26</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">}*/</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__27" class="hit">
+                          <td class="line" data-tooltip>27</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    {</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__28" class="hit">
+                          <td class="line" data-tooltip>28</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        method: &#x27;GET&#x27;,</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__29" class="hit">
+                          <td class="line" data-tooltip>29</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        path: &#x27;/public/{param*}&#x27;,</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__30" class="hit">
+                          <td class="line" data-tooltip>30</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        config: {</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__31" class="hit">
+                          <td class="line" data-tooltip>31</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">            handler: (request, reply) &#x3D;&gt; {</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__32" class="chunks">
+                          <td class="line" data-tooltip>32</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"><div>                </div><div class="miss never" data-tooltip>const path &#x3D; request.params.param;</div></td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__33" class="miss">
+                          <td class="line" data-tooltip>33</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source" data-tooltip>                const mdContent &#x3D; Path.join(publicPagesPath,path )</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__34" class="miss">
+                          <td class="line" data-tooltip>34</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source" data-tooltip>                fs.readFile(&#x60;${mdContent}.md&#x60;, (err, text)&#x3D;&gt;{</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__35" class="chunks">
+                          <td class="line" data-tooltip>35</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"><div>                    </div><div class="miss never" data-tooltip>if(!err)</div></td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__36" class="miss">
+                          <td class="line" data-tooltip>36</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source" data-tooltip>                        return reply(converter.makeHtml(text.toString()))</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__37" class="hit">
+                          <td class="line" data-tooltip>37</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">                    else    </td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__38" class="miss">
+                          <td class="line" data-tooltip>38</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source" data-tooltip>                        return Boom.notFound()</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__39" class="hit">
+                          <td class="line" data-tooltip>39</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">                })</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__40" class="hit">
+                          <td class="line" data-tooltip>40</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">            },</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__41" class="hit">
+                          <td class="line" data-tooltip>41</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">            description: &#x27;Serves the public pages&#x27;,</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__42" class="hit">
+                          <td class="line" data-tooltip>42</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">            notes: &#x27;Serves the public pages using showdown to convert the md to html&#x27;,</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__43" class="hit">
+                          <td class="line" data-tooltip>43</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">            tags: [&#x27;publicpages&#x27;,&#x27;api&#x27;]</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__44" class="hit">
+                          <td class="line" data-tooltip>44</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">            // TODO response schemas</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__45" class="hit">
+                          <td class="line" data-tooltip>45</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">            // define for 200 and concat with other status code on server.preStart</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__46" class="hit">
+                          <td class="line" data-tooltip>46</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        }</td>
+                          
+                        </tr>            <tr id="lib/routes/publicPages.js__47" class="hit">
+                          <td class="line" data-tooltip>47</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    }]</td>
+                          
+                        </tr>        </tbody>
+                </table>
+            </div>
+            <div class="file ">
+                <h2 id="lib/schemas/examples.js">lib/schemas/examples.js </h2>
+                <div class="stats high">
+                    <div class="percentage">100%</div>
+                    <div class="sloc">8</div>
+                    <div class="hits">8</div>
+                    <div class="misses">0</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Line</th>
+                            <th>Lint</th>
+                            <th>Hits</th>
+                            <th>Source</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="lib/schemas/examples.js__1" class="hit">
+                          <td class="line" data-tooltip>1</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">//module functions</td>
+                          
+                        </tr>            <tr id="lib/schemas/examples.js__2" class="hit">
+                          <td class="line" data-tooltip>2</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const {number} &#x3D; global.config.utilities.Joi</td>
+                          
+                        </tr>            <tr id="lib/schemas/examples.js__3" class="hit">
+                          <td class="line" data-tooltip>3</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="lib/schemas/examples.js__4" class="hit">
+                          <td class="line" data-tooltip>4</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">module.exports &#x3D; {</td>
+                          
+                        </tr>            <tr id="lib/schemas/examples.js__5" class="hit">
+                          <td class="line" data-tooltip>5</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    replyParam: {</td>
+                          
+                        </tr>            <tr id="lib/schemas/examples.js__6" class="hit">
+                          <td class="line" data-tooltip>6</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        params: {</td>
+                          
+                        </tr>            <tr id="lib/schemas/examples.js__7" class="hit">
+                          <td class="line" data-tooltip>7</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">            number: number().required().description(&#x27;the number for the todo item&#x27;)</td>
+                          
+                        </tr>            <tr id="lib/schemas/examples.js__8" class="hit">
+                          <td class="line" data-tooltip>8</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        }</td>
+                          
+                        </tr>            <tr id="lib/schemas/examples.js__9" class="hit">
+                          <td class="line" data-tooltip>9</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    }</td>
+                          
+                        </tr>            <tr id="lib/schemas/examples.js__10" class="hit">
+                          <td class="line" data-tooltip>10</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">}</td>
+                          
+                        </tr>        </tbody>
+                </table>
+            </div>
+            <div class="file ">
+                <h2 id="log/index.js">log/index.js </h2>
+                <div class="stats high">
+                    <div class="percentage">91.67%</div>
+                    <div class="sloc">48</div>
+                    <div class="hits">44</div>
+                    <div class="misses">4</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Line</th>
+                            <th>Lint</th>
+                            <th>Hits</th>
+                            <th>Source</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="log/index.js__1" class="hit">
+                          <td class="line" data-tooltip>1</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">//TODO clear the existing file and then log, what if file line count goes wrong</td>
+                          
+                        </tr>            <tr id="log/index.js__2" class="hit">
+                          <td class="line" data-tooltip>2</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">//TODO transport MongoDb, Redis</td>
+                          
+                        </tr>            <tr id="log/index.js__3" class="hit">
+                          <td class="line" data-tooltip>3</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const mongo &#x3D; require(&#x27;mongoskin&#x27;);</td>
+                          
+                        </tr>            <tr id="log/index.js__4" class="hit">
+                          <td class="line" data-tooltip>4</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const colors &#x3D; require(&#x27;colors&#x27;)</td>
+                          
+                        </tr>            <tr id="log/index.js__5" class="hit">
+                          <td class="line" data-tooltip>5</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const fs &#x3D; require(&#x27;fs&#x27;)</td>
+                          
+                        </tr>            <tr id="log/index.js__6" class="hit">
+                          <td class="line" data-tooltip>6</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="log/index.js__7" class="hit">
+                          <td class="line" data-tooltip>7</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const db &#x3D; mongo.db(&#x27;mongodb://localhost:27017/log&#x27;); //TODO MongoDB Connections</td>
+                          
+                        </tr>            <tr id="log/index.js__8" class="hit">
+                          <td class="line" data-tooltip>8</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="log/index.js__9" class="hit">
+                          <td class="line" data-tooltip>9</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const logCollections &#x3D; { //TODO from config</td>
+                          
+                        </tr>            <tr id="log/index.js__10" class="hit">
+                          <td class="line" data-tooltip>10</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    log: &quot;loginfo&quot;,</td>
+                          
+                        </tr>            <tr id="log/index.js__11" class="hit">
+                          <td class="line" data-tooltip>11</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    trace: &quot;logtrace&quot;,</td>
+                          
+                        </tr>            <tr id="log/index.js__12" class="hit">
+                          <td class="line" data-tooltip>12</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    debug: &quot;logdebug&quot;,</td>
+                          
+                        </tr>            <tr id="log/index.js__13" class="hit">
+                          <td class="line" data-tooltip>13</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    info: &quot;loginfo&quot;,</td>
+                          
+                        </tr>            <tr id="log/index.js__14" class="hit">
+                          <td class="line" data-tooltip>14</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    warn: &quot;logwarn&quot;,</td>
+                          
+                        </tr>            <tr id="log/index.js__15" class="hit">
+                          <td class="line" data-tooltip>15</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    error: &quot;logerror&quot;</td>
+                          
+                        </tr>            <tr id="log/index.js__16" class="hit">
+                          <td class="line" data-tooltip>16</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">}</td>
+                          
+                        </tr>            <tr id="log/index.js__17" class="hit">
+                          <td class="line" data-tooltip>17</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"></td>
+                          
+                        </tr>            <tr id="log/index.js__18" class="hit">
+                          <td class="line" data-tooltip>18</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">const logOptions &#x3D; {</td>
+                          
+                        </tr>            <tr id="log/index.js__19" class="hit">
+                          <td class="line" data-tooltip>19</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    level: [&#x27;log&#x27;, &#x27;trace&#x27;, &#x27;debug&#x27;, &#x27;info&#x27;, &#x27;warn&#x27;, &#x27;error&#x27;],</td>
+                          
+                        </tr>            <tr id="log/index.js__20" class="hit">
+                          <td class="line" data-tooltip>20</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    format: [</td>
+                          
+                        </tr>            <tr id="log/index.js__21" class="hit">
+                          <td class="line" data-tooltip>21</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        &quot;{{timestamp}} &lt;{{title}}&gt; {{message}} (in {{path}}:{{line}})&quot;,</td>
+                          
+                        </tr>            <tr id="log/index.js__22" class="hit">
+                          <td class="line" data-tooltip>22</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        { info: &quot;{{timestamp}} &lt;{{title}}&gt; {{message}}&quot; },</td>
+                          
+                        </tr>            <tr id="log/index.js__23" class="hit">
+                          <td class="line" data-tooltip>23</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        { error: &quot;{{timestamp}} &lt;{{title}}&gt; {{message}} (in {{path}:{{line}}) \nCall Stack:\n{{stack}}&quot; }</td>
+                          
+                        </tr>            <tr id="log/index.js__24" class="hit">
+                          <td class="line" data-tooltip>24</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    ],</td>
+                          
+                        </tr>            <tr id="log/index.js__25" class="hit">
+                          <td class="line" data-tooltip>25</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    filters: {</td>
+                          
+                        </tr>            <tr id="log/index.js__26" class="hit">
+                          <td class="line" data-tooltip>26</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        //log : colors.black, </td>
+                          
+                        </tr>            <tr id="log/index.js__27" class="hit">
+                          <td class="line" data-tooltip>27</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        trace: colors.magenta,</td>
+                          
+                        </tr>            <tr id="log/index.js__28" class="hit">
+                          <td class="line" data-tooltip>28</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        debug: colors.blue,</td>
+                          
+                        </tr>            <tr id="log/index.js__29" class="hit">
+                          <td class="line" data-tooltip>29</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        info: colors.green,</td>
+                          
+                        </tr>            <tr id="log/index.js__30" class="hit">
+                          <td class="line" data-tooltip>30</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        warn: colors.yellow,</td>
+                          
+                        </tr>            <tr id="log/index.js__31" class="hit">
+                          <td class="line" data-tooltip>31</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        error: [colors.red, colors.bold]</td>
+                          
+                        </tr>            <tr id="log/index.js__32" class="hit">
+                          <td class="line" data-tooltip>32</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    },</td>
+                          
+                        </tr>            <tr id="log/index.js__33" class="hit">
+                          <td class="line" data-tooltip>33</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    dateformat: &quot;dd-mm-yyyy HH:MM:ss.L&quot;,</td>
+                          
+                        </tr>            <tr id="log/index.js__34" class="hit">
+                          <td class="line" data-tooltip>34</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    transport: [</td>
+                          
+                        </tr>            <tr id="log/index.js__35" class="hit">
+                          <td class="line" data-tooltip>35</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        function (data) {</td>
+                          
+                        </tr>            <tr id="log/index.js__36" class="chunks">
+                          <td class="line" data-tooltip>36</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"><div>            const stream &#x3D; fs.createWriteStream(&#x60;./log-output/${</div><div class="miss true" data-tooltip>logCollections[data.title]</div><div> || </div><div class="miss never" data-tooltip>&#x27;logcollections&#x27;</div><div>}.log&#x60;, {</div></td>
+                          
+                        </tr>            <tr id="log/index.js__37" class="hit">
+                          <td class="line" data-tooltip>37</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">                flags: &quot;a&quot;,</td>
+                          
+                        </tr>            <tr id="log/index.js__38" class="hit">
+                          <td class="line" data-tooltip>38</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">                encoding: &quot;utf8&quot;,</td>
+                          
+                        </tr>            <tr id="log/index.js__39" class="hit">
+                          <td class="line" data-tooltip>39</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">                mode: 0666</td>
+                          
+                        </tr>            <tr id="log/index.js__40" class="hit">
+                          <td class="line" data-tooltip>40</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">            }).write(data.output + &quot;\n&quot;);</td>
+                          
+                        </tr>            <tr id="log/index.js__41" class="hit">
+                          <td class="line" data-tooltip>41</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        },</td>
+                          
+                        </tr>            <tr id="log/index.js__42" class="hit">
+                          <td class="line" data-tooltip>42</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        function (data) {</td>
+                          
+                        </tr>            <tr id="log/index.js__43" class="hit">
+                          <td class="line" data-tooltip>43</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">            console.log(data.output)</td>
+                          
+                        </tr>            <tr id="log/index.js__44" class="hit">
+                          <td class="line" data-tooltip>44</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        },</td>
+                          
+                        </tr>            <tr id="log/index.js__45" class="hit">
+                          <td class="line" data-tooltip>45</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        function (data) {</td>
+                          
+                        </tr>            <tr id="log/index.js__46" class="chunks">
+                          <td class="line" data-tooltip>46</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"><div>            db.collection(</div><div class="miss true" data-tooltip>logCollections[data.title]</div><div> || </div><div class="miss never" data-tooltip>&#x27;logcollections&#x27;</div><div>).insert(data, function (err, log) {</div></td>
+                          
+                        </tr>            <tr id="log/index.js__47" class="chunks">
+                          <td class="line" data-tooltip>47</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source"><div>                if (</div><div class="miss false" data-tooltip>err</div><div>) {</div></td>
+                          
+                        </tr>            <tr id="log/index.js__48" class="miss">
+                          <td class="line" data-tooltip>48</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source" data-tooltip>                    console.error(err);</td>
+                          
+                        </tr>            <tr id="log/index.js__49" class="hit">
+                          <td class="line" data-tooltip>49</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">                }</td>
+                          
+                        </tr>            <tr id="log/index.js__50" class="hit">
+                          <td class="line" data-tooltip>50</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">            })</td>
+                          
+                        </tr>            <tr id="log/index.js__51" class="hit">
+                          <td class="line" data-tooltip>51</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">        }</td>
+                          
+                        </tr>            <tr id="log/index.js__52" class="hit">
+                          <td class="line" data-tooltip>52</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">    ]</td>
+                          
+                        </tr>            <tr id="log/index.js__53" class="hit">
+                          <td class="line" data-tooltip>53</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip></td>
+                          <td class="source">}</td>
+                          
+                        </tr>            <tr id="log/index.js__54" class="hit">
+                          <td class="line" data-tooltip>54</td>
+                          <td class="lint empty"></td>
+                          <td class="hits" data-tooltip>1</td>
+                          <td class="source">module.exports &#x3D; require(&#x27;tracer&#x27;).colorConsole(logOptions)</td>
+                          
+                        </tr>        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>    <div id="linting">
+        <h1>Linting Report</h1>
+            <span>Nothing to show here, linting is disabled.</span>
+    </div>  </body>
+</html>

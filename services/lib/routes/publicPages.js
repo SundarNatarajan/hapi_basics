@@ -1,5 +1,6 @@
 const Path = require('path')
 const fs = require('fs')
+const Boom = require('boom')
 const showdown = require('showdown'),
     converter = new showdown.Converter()
 const publicPagesPath = Path.join(__dirname, '../','public')
@@ -31,11 +32,16 @@ module.exports = [/*{
                 const path = request.params.param;
                 const mdContent = Path.join(publicPagesPath,path )
                 fs.readFile(`${mdContent}.md`, (err, text)=>{
-                    return reply(converter.makeHtml(text.toString()))
+                    if(!err)
+                        return reply(converter.makeHtml(text.toString()))
+                    else    
+                        return Boom.notFound()
                 })
             },
             description: 'Serves the public pages',
             notes: 'Serves the public pages using showdown to convert the md to html',
-            tags: ['publicpages']
+            tags: ['publicpages','api']
+            // TODO response schemas
+            // define for 200 and concat with other status code on server.preStart
         }
     }]

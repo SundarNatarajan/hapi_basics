@@ -4,9 +4,12 @@
   "description": "",
   "main": "server.js",
   "scripts": {
+    "envtask": "gulp envtask",
     "lint": "eslint .",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "node node_modules/lab/bin/lab -v -L -C -D -c -t 100",
+    "test-wo-lint": "node node_modules/lab/bin/lab -v -C -D -c -t 95",
+    "test-cov-html": "lab -r html -o coverage.html"
   },
   "author": "Sundar N",
   "authorEmail": "sundaraccet53@gmail.com",
@@ -33,10 +36,12 @@
   },
   "repository": {},
   "devDependencies": {
+    "code": "4.1.0",
     "eslint": "^3.14.1",
     "eslint-config-airbnb-base": "^11.0.1",
     "eslint-plugin-import": "^2.2.0",
     "eslint-plugin-react": "^6.9.0",
+    "lab": "14.0.1",
     "lint": "^1.1.2"
   }
 }

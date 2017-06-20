@@ -2,10 +2,10 @@ const hapiTracer = {
   register: function (server, options, next) {
 
     server.on('response', function (request) {
-      trace.info(`From ${request.info.remoteAddress}: ${request.method.toUpperCase()} -- ${request.connection.info.uri}${request.url.path} -- ${request.response.statusCode} in (${Date.now() - request.info.received}ms)`
+      logger.info(`From ${request.info.remoteAddress}: ${request.method.toUpperCase()} -- ${request.connection.info.uri}${request.url.path} -- ${request.response.statusCode} in (${Date.now() - request.info.received}ms)`
       )
-      /* trace.info('Request payload:', request.payload);
-       trace.info('Response payload:', request.response.source);
+      /* logger.info('Request payload:', request.payload);
+       logger.info('Response payload:', request.response.source);
        //TODO these logs too needed*/
     });
 

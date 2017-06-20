@@ -1,32 +1,25 @@
-'use strict'
+//TODO configure the eslint first
+const utilities = {
+    Joi: require('joi'),
+    _: require('lodash'),
+    pckg: require('./package.json')
+}
 
-const Path = require('path')
-const Hapi = require('hapi')
+global.config = {
+    utilities: utilities
+}
 
-const server = new Hapi.Server({
-    connections: {
-        routes: {
-            files: {
-                relativeTo: Path.join(__dirname,'lib','public')
-            }
-        }
+logger = require('./log')
+
+const server = require('./lib')
+
+server.start((err) => {
+    if (err)
+        logger.error(err)
+    else {
+        logger.info(`Server running at ${server.info.uri}`)
     }
 })
 
-// server connection details
-server.connection({ host: 'localhost', port: '8080' })
-
-//hapi registers plugins
-const plugins = require('./lib/plugins')
-const routes = require('./lib/routes')
-
-//server routes
-server.register(plugins, (err) => {
-    if (err) {
-        trace.error(`Error on registering Good plugin ${err.stack || err}`)
-    }
-})
-
-server.route(routes)
-
+// TODO is needed for testing ??
 module.exports = server
